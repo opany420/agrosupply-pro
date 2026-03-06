@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from "framer-motion";
 import { Search, ShoppingCart } from "lucide-react";
 import { useCart } from '../CartContext';
+import { Link } from 'react-router-dom';
 
 const products = [
   { id: 1, name: "Hybrid Maize Seeds", category: "seeds", price: 45.99, unit: "kg", description: "High-yield hybrid maize seeds for maximum harvest", badge: "Best Seller", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/2015-Corn.jpg/640px-2015-Corn.jpg" },
@@ -95,29 +96,33 @@ export default function Products() {
               transition={{ delay: idx * 0.05 }}
               className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group border border-gray-100">
 
-              <div className="relative h-48 overflow-hidden bg-gray-100">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  onError={(e) => {
-                    e.target.src = "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=80";
-                  }}
-                />
-                {product.badge && (
-                  <span className="absolute top-3 left-3 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                    {product.badge}
-                  </span>
-                )}
-              </div>
+              <Link to={`/products/${product.id}`}>
+                <div className="relative h-48 overflow-hidden bg-gray-100">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    onError={(e) => {
+                      e.target.src = "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=80";
+                    }}
+                  />
+                  {product.badge && (
+                    <span className="absolute top-3 left-3 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                      {product.badge}
+                    </span>
+                  )}
+                </div>
+              </Link>
 
               <div className="p-4">
                 <span className="text-xs text-emerald-600 font-semibold uppercase tracking-wide">
                   {product.category.replace(/_/g, ' ')}
                 </span>
-                <h3 className="font-bold text-gray-900 mt-1 mb-2 group-hover:text-emerald-600 transition-colors">
-                  {product.name}
-                </h3>
+                <Link to={`/products/${product.id}`}>
+                  <h3 className="font-bold text-gray-900 mt-1 mb-2 group-hover:text-emerald-600 transition-colors">
+                    {product.name}
+                  </h3>
+                </Link>
                 <p className="text-gray-500 text-sm mb-4 line-clamp-2">{product.description}</p>
                 <div className="flex items-center justify-between">
                   <div>

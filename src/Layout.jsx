@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Leaf, Home, Package, Info, Phone, LayoutDashboard, LogIn } from "lucide-react";
+import { Menu, X, Leaf, Home, Package, Info, Phone, LayoutDashboard, LogIn, ShoppingCart } from "lucide-react";
+import { useCart } from './CartContext';
+import Cart from './components/Cart';
 
 export default function Layout({ children }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { totalItems, setIsCartOpen } = useCart();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -24,12 +27,17 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen flex flex-col">
+
+      {/* Cart Drawer */}
+      <Cart />
+
       {/* Header */}
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled || !isHome ? 'bg-white shadow-md' : 'bg-transparent'
       }`}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
+
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
@@ -59,18 +67,65 @@ export default function Layout({ children }) {
                   {link.name}
                 </Link>
               ))}
-              <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                <LogIn className="w-4 h-4 inline mr-2" />
-                Sign In
-              </button>
+
+              <div className="flex items-center gap-3">
+
+                {/* Cart Button */}
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className={`relative p-2 rounded-lg transition-colors ${
+                    isScrolled || !isHome
+                      ? 'hover:bg-gray-100 text-gray-700'
+                      : 'hover:bg-white/20 text-white'
+                  }`}>
+                  <ShoppingCart className="w-6 h-6" />
+                  {totalItems > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                      {totalItems}
+                    </span>
+                  )}
+                </button>
+
+                <Link to="/dashboard">
+                  <button className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors border ${
+                    isScrolled || !isHome
+                      ? 'border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white'
+                      : 'border-white text-white hover:bg-white/20'
+                  }`}>
+                    <LayoutDashboard className="w-4 h-4" />
+                    Dashboard
+                  </button>
+                </Link>
+
+                <Link to="/login">
+                  <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
+                    <LogIn className="w-4 h-4" />
+                    Sign In
+                  </button>
+                </Link>
+              </div>
             </nav>
 
             {/* Mobile Menu Button */}
-            <button
-              className={`lg:hidden ${isScrolled || !isHome ? 'text-gray-900' : 'text-white'}`}
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+            <div className="lg:hidden flex items-center gap-3">
+              <button
+                onClick={() => setIsCartOpen(true)}
+                className={`relative p-2 rounded-lg ${
+                  isScrolled || !isHome ? 'text-gray-700' : 'text-white'
+                }`}>
+                <ShoppingCart className="w-6 h-6" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    {totalItems}
+                  </span>
+                )}
+              </button>
+              <button
+                className={`${isScrolled || !isHome ? 'text-gray-900' : 'text-white'}`}
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -86,6 +141,16 @@ export default function Layout({ children }) {
                   <span className="font-medium">{link.name}</span>
                 </Link>
               ))}
+              <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100">
+                <LayoutDashboard className="w-5 h-5 text-gray-500" />
+                <span className="font-medium">Dashboard</span>
+              </Link>
+              <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg bg-emerald-600 text-white">
+                <LogIn className="w-5 h-5" />
+                <span className="font-medium">Sign In</span>
+              </Link>
             </div>
           </div>
         )}
@@ -136,7 +201,7 @@ export default function Layout({ children }) {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400 text-sm">
-            © 2024 Chicago Agro Supplies Limited. All rights reserved.
+            2024 Chicago Agro Supplies Limited. All rights reserved.
           </div>
         </div>
       </footer>

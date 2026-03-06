@@ -81,13 +81,48 @@ function HeroSection() {
 
 // ── CATEGORIES ──
 const categories = [
-  { name: "Seeds", icon: "🌱", description: "Premium crop seeds", color: "from-green-500 to-emerald-600" },
-  { name: "Fertilizers", icon: "🧪", description: "Nutrient-rich enhancers", color: "from-amber-500 to-orange-600" },
-  { name: "Pesticides", icon: "🛡️", description: "Crop protection", color: "from-red-500 to-rose-600" },
-  { name: "Equipment", icon: "🚜", description: "Modern machinery", color: "from-blue-500 to-indigo-600" },
-  { name: "Tools", icon: "🔧", description: "Hand and power tools", color: "from-gray-500 to-slate-600" },
-  { name: "Animal Feed", icon: "🌾", description: "Nutritious livestock feed", color: "from-yellow-500 to-amber-600" },
-  { name: "Irrigation", icon: "💧", description: "Water management", color: "from-cyan-500 to-teal-600" },
+  {
+    name: "Seeds",
+    description: "Premium crop seeds for maximum yield",
+    color: "from-green-500 to-emerald-600",
+    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&q=80"
+  },
+  {
+    name: "Fertilizers",
+    description: "Nutrient-rich soil enhancers",
+    color: "from-amber-500 to-orange-600",
+    image: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&q=80"
+  },
+  {
+    name: "Pesticides",
+    description: "Effective crop protection",
+    color: "from-red-500 to-rose-600",
+    image: "https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?w=400&q=80"
+  },
+  {
+    name: "Equipment",
+    description: "Modern farming machinery",
+    color: "from-blue-500 to-indigo-600",
+    image: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=400&q=80"
+  },
+  {
+    name: "Tools",
+    description: "Essential hand and power tools",
+    color: "from-gray-500 to-slate-600",
+    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&q=80"
+  },
+  {
+    name: "Animal Feed",
+    description: "Nutritious livestock feed",
+    color: "from-yellow-500 to-amber-600",
+    image: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=400&q=80"
+  },
+  {
+    name: "Irrigation",
+    description: "Water management systems",
+    color: "from-cyan-500 to-teal-600",
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80"
+  },
 ];
 
 function CategoryGrid() {
@@ -101,20 +136,26 @@ function CategoryGrid() {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {categories.map((cat, idx) => (
-            <motion.div key={cat.name}
+            <motion.div
+              key={cat.name}
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.05 }}>
               <Link to="/products">
-                <div className="group relative overflow-hidden rounded-2xl p-6 h-44 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                  <div className={`absolute inset-0 bg-gradient-to-br ${cat.color} opacity-90`} />
-                  <div className="relative z-10 h-full flex flex-col justify-between">
-                    <span className="text-4xl">{cat.icon}</span>
-                    <div>
-                      <h3 className="text-white font-bold text-lg">{cat.name}</h3>
-                      <p className="text-white/80 text-sm mt-1">{cat.description}</p>
-                    </div>
+                <div className="group relative overflow-hidden rounded-2xl h-52 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                  {/* Real Image */}
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  {/* Overlay */}
+                  <div className={`absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent`} />
+                  {/* Text */}
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <h3 className="text-white font-bold text-lg">{cat.name}</h3>
+                    <p className="text-white/80 text-sm mt-1">{cat.description}</p>
                   </div>
                 </div>
               </Link>

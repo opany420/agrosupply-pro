@@ -28,8 +28,23 @@ export default function Layout({ children }) {
   return (
     <div className="min-h-screen flex flex-col">
 
-      {/* Cart Drawer */}
       <Cart />
+
+      {/* WhatsApp Floating Button */}
+      <a
+        href="https://wa.me/13125550000?text=Hello! I am interested in your agricultural products."
+        target="_blank"
+        rel="noreferrer"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 group">
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+          alt="WhatsApp"
+          className="w-8 h-8"
+        />
+        <span className="absolute right-16 bg-gray-900 text-white text-xs px-3 py-1 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+          Chat on WhatsApp
+        </span>
+      </a>
 
       {/* Header */}
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -106,7 +121,7 @@ export default function Layout({ children }) {
               </div>
             </nav>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile */}
             <div className="lg:hidden flex items-center gap-3">
               <button
                 onClick={() => setIsCartOpen(true)}

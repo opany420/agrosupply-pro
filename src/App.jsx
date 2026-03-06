@@ -9,6 +9,8 @@ import Contact from './pages/Contact'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import ProductDetail from './pages/ProductDetail'
+import FAQ from './pages/FAQ'
+import Checkout from './pages/Checkout'
 
 const queryClient = new QueryClient()
 
@@ -23,6 +25,8 @@ function App() {
             <Route path="/products/:id" element={<Layout><ProductDetail /></Layout>} />
             <Route path="/about" element={<Layout><About /></Layout>} />
             <Route path="/contact" element={<Layout><Contact /></Layout>} />
+            <Route path="/faq" element={<Layout><FAQ /></Layout>} />
+            <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/login" element={<Login />} />
           </Routes>

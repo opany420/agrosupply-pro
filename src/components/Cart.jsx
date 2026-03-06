@@ -1,8 +1,8 @@
-import React from 'react';
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight } from "lucide-react";
-import { useCart } from '../CartContext';
-import { Link } from 'react-router-dom';
+import { useCart } from "../CartContext";
+import { Link } from "react-router-dom";
 
 export default function Cart() {
   const { cart, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity, totalItems, totalPrice, clearCart } = useCart();
@@ -22,10 +22,10 @@ export default function Cart() {
 
           {/* Cart Drawer */}
           <motion.div
-            initial={{ x: '100%' }}
+            initial={{ x: "100%" }}
             animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="fixed right-0 top-0 h-full w-full max-w-md bg-white z-50 shadow-2xl flex flex-col">
 
             {/* Header */}
@@ -74,6 +74,7 @@ export default function Cart() {
                           src={item.image}
                           alt={item.name}
                           className="w-full h-full object-cover"
+                          onError={e => e.target.src = "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=80"}
                         />
                       </div>
 
@@ -82,7 +83,6 @@ export default function Cart() {
                         <p className="text-emerald-600 font-bold mb-3">
                           ${(item.price * item.quantity).toFixed(2)}
                         </p>
-
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <button
@@ -125,10 +125,12 @@ export default function Cart() {
                   <span className="text-lg font-bold text-gray-900">Total</span>
                   <span className="text-2xl font-bold text-emerald-600">${totalPrice.toFixed(2)}</span>
                 </div>
-                <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors mb-3">
-                  Checkout
-                  <ArrowRight className="w-5 h-5" />
-                </button>
+                <Link to="/checkout" onClick={() => setIsCartOpen(false)}>
+                  <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors mb-3">
+                    Checkout
+                    <ArrowRight className="w-5 h-5" />
+                  </button>
+                </Link>
                 <button
                   onClick={clearCart}
                   className="w-full border border-gray-200 text-gray-600 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors">

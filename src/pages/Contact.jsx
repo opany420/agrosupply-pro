@@ -10,7 +10,7 @@ const contactInfo = [
 ];
 
 const faqs = [
-  { q: "Do you offer bulk discounts?", a: "Yes! Orders over $500 get 10% off." },
+  { q: "Do you offer bulk discounts?", a: "Yes! Orders over KSh 50,000 get 10% off." },
   { q: "What is your delivery time?", a: "1-2 days Chicago, 3-5 days Midwest." },
   { q: "Do you offer credit accounts?", a: "Yes, for qualified businesses." },
 ];

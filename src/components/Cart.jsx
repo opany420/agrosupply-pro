@@ -115,7 +115,7 @@ export default function Cart() {
               <div className="p-6 border-t bg-white">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-gray-500">Subtotal</span>
-                  <span className="font-bold text-gray-900">${totalPrice.toFixed(2)}</span>
+                  <span className="font-bold text-gray-900">KSh {totalPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between mb-6">
                   <span className="text-gray-500">Delivery</span>
@@ -123,7 +123,7 @@ export default function Cart() {
                 </div>
                 <div className="flex items-center justify-between mb-6 pb-4 border-t pt-4">
                   <span className="text-lg font-bold text-gray-900">Total</span>
-                  <span className="text-2xl font-bold text-emerald-600">${totalPrice.toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-emerald-600">KSh {totalPrice.toFixed(2)}</span>
                 </div>
                 <Link to="/checkout" onClick={() => setIsCartOpen(false)}>
                   <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors mb-3">

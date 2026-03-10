@@ -381,9 +381,9 @@ export default function Dashboard() {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6 max-w-2xl">
                 {[
                   { label: "Company Name", value: "Chicago Agro Supplies Limited" },
-                  { label: "Email", value: "admin@chicagoagro.com" },
-                  { label: "Phone", value: "+254 712 345 678" },
-                  { label: "Address", value: "Nairobi, Kenya" },
+{ label: "Email", value: "rizikisuppliers@gmail.com" },
+{ label: "Phone", value: "+254 757 790 379" },
+{ label: "Address", value: "P.O. Box 7, 40101 Ahero, Kisumu County, Kenya" },
                 ].map(field => (
                   <div key={field.label}>
                     <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>

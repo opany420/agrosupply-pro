@@ -36,7 +36,8 @@ export default function Checkout() {
       `Payment: ${formData.paymentMethod === "equity" ? "Equity Paybill" : "Cash on Delivery"}`;
 
     // Open WhatsApp with order details (replace with client's number)
-    window.open(`https://wa.me/254 757 790379?text=${message}`, "_blank");
+    window.open(`https://wa.me/254757790379?text=${message}`, "_blank");
+
 
     setOrderPlaced(true);
     clearCart();

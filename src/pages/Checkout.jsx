@@ -357,7 +357,7 @@ export default function Checkout() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-gray-900 text-sm truncate">{item.name}</p>
                       <p className="text-gray-500 text-xs">Qty: {item.quantity}</p>
-                      <p className="text-emerald-600 font-bold text-sm">KSh {(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="text-emerald-600 font-bold text-sm">KSh {(item.price * item.quantity)}</p>
                     </div>
                   </div>
                 ))}
@@ -365,7 +365,7 @@ export default function Checkout() {
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Subtotal</span>
-                  <span className="font-medium">KSh {totalPrice.toFixed(2)}</span>
+                  <span className="font-medium">KSh {totalPrice}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Delivery</span>
@@ -373,7 +373,7 @@ export default function Checkout() {
                 </div>
                 <div className="flex justify-between text-lg font-bold pt-2 border-t">
                   <span>Total</span>
-                  <span className="text-emerald-600">KSh {totalPrice.toFixed(2)}</span>
+                  <span className="text-emerald-600">KSh {totalPrice}</span>
                 </div>
               </div>
             </div>

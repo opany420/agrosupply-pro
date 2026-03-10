@@ -1,25 +1,43 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useCart } from "../CartContext";
-import { Link, useNavigate } from "react-router-dom";
-import { ShoppingBag, CheckCircle, Truck, CreditCard, User, MapPin, Phone, Mail, ArrowLeft, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ShoppingBag, CheckCircle, Truck, CreditCard, User, MapPin, Phone, Mail, ArrowLeft, ArrowRight, MessageCircle } from "lucide-react";
 
 export default function Checkout() {
   const { cart, totalPrice, clearCart } = useCart();
-  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "", lastName: "", email: "", phone: "",
-    address: "", city: "", state: "", zip: "",
-    paymentMethod: "card",
-    cardNumber: "", cardExpiry: "", cardCvv: "",
+    address: "", city: "", county: "",
+    paymentMethod: "equity",
   });
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handlePlaceOrder = (e) => {
     e.preventDefault();
+
+    // Build WhatsApp message
+    const orderLines = cart.map(item =>
+      `• ${item.name} x${item.quantity} = KES ${(item.price * item.quantity).toLocaleString()}`
+    ).join("%0A");
+
+    const message =
+      `🛒 *NEW ORDER - Chicago Agro Supplies*%0A%0A` +
+      `*Customer Details:*%0A` +
+      `Name: ${formData.firstName} ${formData.lastName}%0A` +
+      `Phone: ${formData.phone}%0A` +
+      `Email: ${formData.email}%0A` +
+      `Address: ${formData.address}, ${formData.city}, ${formData.county}%0A%0A` +
+      `*Order Items:*%0A${orderLines}%0A%0A` +
+      `*Total: KES ${totalPrice.toLocaleString()}*%0A` +
+      `Payment: ${formData.paymentMethod === "equity" ? "Equity Paybill" : "Cash on Delivery"}`;
+
+    // Open WhatsApp with order details (replace with client's number)
+    window.open(`https://wa.me/254 757 790379?text=${message}`, "_blank");
+
     setOrderPlaced(true);
     clearCart();
   };
@@ -51,13 +69,33 @@ export default function Checkout() {
           <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-emerald-600" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">Order Placed!</h2>
-          <p className="text-gray-500 mb-2">Thank you for your order!</p>
-          <p className="text-gray-500 mb-8">We will contact you shortly to confirm your delivery details.</p>
-          <div className="bg-emerald-50 rounded-xl p-4 mb-8">
-            <p className="text-emerald-700 font-semibold">Order Confirmation</p>
-            <p className="text-emerald-600 text-sm">A confirmation has been sent to {formData.email}</p>
-          </div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">Order Placed! 🎉</h2>
+          <p className="text-gray-500 mb-2">Thank you, {formData.firstName}!</p>
+          <p className="text-gray-500 mb-8">Our team will contact you shortly on <strong>{formData.phone}</strong> to confirm your delivery.</p>
+
+          {formData.paymentMethod === "equity" && (
+            <div className="bg-blue-50 rounded-xl p-5 mb-6 text-left border border-blue-100">
+              <p className="font-bold text-blue-900 mb-3">💳 Complete Your Payment</p>
+              <div className="space-y-1 text-sm text-blue-800">
+                <p>1. Go to <strong>Equity Bank App or USSD *247#</strong></p>
+                <p>2. Select <strong>Pay Bill</strong></p>
+                <p>3. Paybill Number: <strong>247247</strong></p>
+                <p>4. Account Number: <strong>0790026955</strong></p>
+                <p>5. Account Name: <strong>Chicago Agro Supplies Limited</strong></p>
+                <p>6. Branch: <strong>Kakamega</strong></p>
+                <p>7. Amount: <strong>KES {totalPrice.toLocaleString()}</strong></p>
+              </div>
+              <p className="text-blue-600 text-xs mt-3">📌 Send payment screenshot to our WhatsApp to confirm your order</p>
+            </div>
+          )}
+
+          {formData.paymentMethod === "cod" && (
+            <div className="bg-amber-50 rounded-xl p-4 mb-6 border border-amber-100">
+              <p className="font-semibold text-amber-900 mb-1">💵 Cash on Delivery</p>
+              <p className="text-amber-700 text-sm">Have exact cash ready when our rider arrives. Delivery within Nairobi 1–3 business days.</p>
+            </div>
+          )}
+
           <div className="flex gap-4">
             <Link to="/" className="flex-1">
               <button className="w-full border border-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
@@ -137,7 +175,7 @@ export default function Checkout() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
                       <input name="lastName" required value={formData.lastName} onChange={handleChange}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        placeholder="Smith" />
+                        placeholder="Kamau" />
                     </div>
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
@@ -147,46 +185,40 @@ export default function Checkout() {
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input name="email" type="email" required value={formData.email} onChange={handleChange}
                           className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                          placeholder="john@example.com" />
+                          placeholder="john@email.com" />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone (WhatsApp)</label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input name="phone" type="tel" required value={formData.phone} onChange={handleChange}
                           className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                          placeholder="(312) 555-0000" />
+                          placeholder="0712 345 678" />
                       </div>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Address</label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input name="address" required value={formData.address} onChange={handleChange}
                         className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        placeholder="123 Farm Road" />
+                        placeholder="e.g. Kenyatta Avenue, Westlands" />
                     </div>
                   </div>
-                  <div className="grid md:grid-cols-3 gap-4">
+                  <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Town / City</label>
                       <input name="city" required value={formData.city} onChange={handleChange}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        placeholder="Chicago" />
+                        placeholder="Nairobi" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                      <input name="state" required value={formData.state} onChange={handleChange}
+                      <label className="block text-sm font-medium text-gray-700 mb-1">County</label>
+                      <input name="county" required value={formData.county} onChange={handleChange}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        placeholder="IL" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
-                      <input name="zip" required value={formData.zip} onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        placeholder="60601" />
+                        placeholder="Nairobi County" />
                     </div>
                   </div>
                   <button
@@ -211,16 +243,14 @@ export default function Checkout() {
                   <h2 className="text-xl font-bold text-gray-900">Payment Method</h2>
                 </div>
                 <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-3 mb-6">
+                  <div className="grid grid-cols-2 gap-3 mb-6">
                     {[
-                      { value: "card", label: "Credit Card" },
-                      { value: "bank", label: "Bank Transfer" },
-                      { value: "cod", label: "Cash on Delivery" },
+                      { value: "equity", label: "🏦 Equity Paybill" },
+                      { value: "cod", label: "💵 Cash on Delivery" },
                     ].map(method => (
-                      <button
-                        key={method.value}
+                      <button key={method.value}
                         onClick={() => setFormData({ ...formData, paymentMethod: method.value })}
-                        className={"py-3 px-4 rounded-xl border-2 font-medium text-sm transition-all " + (
+                        className={"py-4 px-4 rounded-xl border-2 font-medium text-sm transition-all " + (
                           formData.paymentMethod === method.value
                             ? "border-emerald-600 bg-emerald-50 text-emerald-700"
                             : "border-gray-200 text-gray-600 hover:border-emerald-300"
@@ -230,58 +260,50 @@ export default function Checkout() {
                     ))}
                   </div>
 
-                  {formData.paymentMethod === "card" && (
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
-                        <input name="cardNumber" value={formData.cardNumber} onChange={handleChange}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                          placeholder="1234 5678 9012 3456" maxLength={19} />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
-                          <input name="cardExpiry" value={formData.cardExpiry} onChange={handleChange}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                            placeholder="MM/YY" maxLength={5} />
+                  {formData.paymentMethod === "equity" && (
+                    <div className="bg-blue-50 rounded-xl p-5 border border-blue-100">
+                      <p className="font-bold text-blue-900 mb-3">💳 Equity Bank Paybill Details</p>
+                      <div className="space-y-2 text-sm text-blue-800">
+                        <div className="flex justify-between bg-white rounded-lg px-3 py-2">
+                          <span className="text-gray-500">Paybill Number</span>
+                          <span className="font-bold">247247</span>
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">CVV</label>
-                          <input name="cardCvv" value={formData.cardCvv} onChange={handleChange}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                            placeholder="123" maxLength={3} />
+                        <div className="flex justify-between bg-white rounded-lg px-3 py-2">
+                          <span className="text-gray-500">Account Number</span>
+                          <span className="font-bold">0790026955</span>
+                        </div>
+                        <div className="flex justify-between bg-white rounded-lg px-3 py-2">
+                          <span className="text-gray-500">Account Name</span>
+                          <span className="font-bold">Chicago Agro Supplies Limited</span>
+                        </div>
+                        <div className="flex justify-between bg-white rounded-lg px-3 py-2">
+                          <span className="text-gray-500">Branch</span>
+                          <span className="font-bold">Kakamega</span>
+                        </div>
+                        <div className="flex justify-between bg-white rounded-lg px-3 py-2">
+                          <span className="text-gray-500">Amount</span>
+                          <span className="font-bold text-emerald-600">KES {totalPrice.toLocaleString()}</span>
                         </div>
                       </div>
-                    </div>
-                  )}
-
-                  {formData.paymentMethod === "bank" && (
-                    <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
-                      <p className="font-semibold text-blue-900 mb-2">Bank Transfer Details</p>
-                      <p className="text-blue-700 text-sm">Bank: First National Bank</p>
-                      <p className="text-blue-700 text-sm">Account Name: Chicago Agro Supplies Ltd</p>
-                      <p className="text-blue-700 text-sm">Account Number: 0123456789</p>
-                      <p className="text-blue-700 text-sm">Routing Number: 071000013</p>
+                      <p className="text-blue-600 text-xs mt-3">📌 After payment, send screenshot to our WhatsApp for quick confirmation</p>
                     </div>
                   )}
 
                   {formData.paymentMethod === "cod" && (
                     <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
-                      <p className="font-semibold text-amber-900 mb-1">Cash on Delivery</p>
-                      <p className="text-amber-700 text-sm">Pay when your order arrives at your doorstep. Available for orders within Chicago only.</p>
+                      <p className="font-semibold text-amber-900 mb-1">💵 Cash on Delivery</p>
+                      <p className="text-amber-700 text-sm">Have exact cash ready when our rider arrives. Available within Nairobi. Delivery in 1–3 business days.</p>
                     </div>
                   )}
 
                   <div className="flex gap-4 mt-4">
                     <button onClick={() => setStep(1)}
                       className="flex-1 border border-gray-200 text-gray-700 py-4 rounded-xl font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-                      <ArrowLeft className="w-5 h-5" />
-                      Back
+                      <ArrowLeft className="w-5 h-5" /> Back
                     </button>
                     <button onClick={() => setStep(3)}
                       className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors">
-                      Review Order
-                      <ArrowRight className="w-5 h-5" />
+                      Review Order <ArrowRight className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
@@ -306,34 +328,39 @@ export default function Checkout() {
                     <p className="text-gray-600 text-sm">{formData.firstName} {formData.lastName}</p>
                     <p className="text-gray-600 text-sm">{formData.email}</p>
                     <p className="text-gray-600 text-sm">{formData.phone}</p>
-                    <p className="text-gray-600 text-sm">{formData.address}, {formData.city}, {formData.state} {formData.zip}</p>
+                    <p className="text-gray-600 text-sm">{formData.address}, {formData.city}, {formData.county}</p>
                   </div>
 
                   <div className="bg-gray-50 rounded-xl p-4">
                     <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                       <CreditCard className="w-4 h-4 text-emerald-600" /> Payment Method
                     </h3>
-                    <p className="text-gray-600 text-sm capitalize">{formData.paymentMethod === "cod" ? "Cash on Delivery" : formData.paymentMethod === "bank" ? "Bank Transfer" : "Credit Card"}</p>
+                    <p className="text-gray-600 text-sm">
+                      {formData.paymentMethod === "equity" ? "🏦 Equity Paybill (247247 → Acc: 0790026955)" : "💵 Cash on Delivery"}
+                    </p>
                   </div>
 
                   <div className="bg-gray-50 rounded-xl p-4">
                     <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                       <Truck className="w-4 h-4 text-emerald-600" /> Delivery
                     </h3>
-                    <p className="text-gray-600 text-sm">Free Delivery — 1-3 Business Days</p>
+                    <p className="text-gray-600 text-sm">Free Delivery — 1–3 Business Days within Nairobi</p>
                   </div>
+                </div>
+
+                <div className="bg-emerald-50 rounded-xl p-4 mb-6 border border-emerald-100 flex items-start gap-3">
+                  <MessageCircle className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-emerald-700 text-sm">Clicking <strong>Place Order</strong> will open WhatsApp so your order goes directly to our team for quick processing!</p>
                 </div>
 
                 <div className="flex gap-4">
                   <button onClick={() => setStep(2)}
                     className="flex-1 border border-gray-200 text-gray-700 py-4 rounded-xl font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-                    <ArrowLeft className="w-5 h-5" />
-                    Back
+                    <ArrowLeft className="w-5 h-5" /> Back
                   </button>
                   <button onClick={handlePlaceOrder}
                     className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors">
-                    Place Order
-                    <CheckCircle className="w-5 h-5" />
+                    Place Order <CheckCircle className="w-5 h-5" />
                   </button>
                 </div>
               </motion.div>
@@ -357,7 +384,7 @@ export default function Checkout() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-gray-900 text-sm truncate">{item.name}</p>
                       <p className="text-gray-500 text-xs">Qty: {item.quantity}</p>
-                      <p className="text-emerald-600 font-bold text-sm">KSh {(item.price * item.quantity)}</p>
+                      <p className="text-emerald-600 font-bold text-sm">KES {(item.price * item.quantity).toLocaleString()}</p>
                     </div>
                   </div>
                 ))}
@@ -365,7 +392,7 @@ export default function Checkout() {
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Subtotal</span>
-                  <span className="font-medium">KSh {totalPrice}</span>
+                  <span className="font-medium">KES {totalPrice.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Delivery</span>
@@ -373,7 +400,7 @@ export default function Checkout() {
                 </div>
                 <div className="flex justify-between text-lg font-bold pt-2 border-t">
                   <span>Total</span>
-                  <span className="text-emerald-600">KSh {totalPrice}</span>
+                  <span className="text-emerald-600">KES {totalPrice.toLocaleString()}</span>
                 </div>
               </div>
             </div>

@@ -81,7 +81,7 @@ export default function Cart() {
                       <div className="flex-1 min-w-0">
                         <h4 className="font-semibold text-gray-900 text-sm mb-1 truncate">{item.name}</h4>
                         <p className="text-emerald-600 font-bold mb-3">
-                          ${(item.price * item.quantity)}
+                          KSh {(item.price * item.quantity)}
                         </p>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">

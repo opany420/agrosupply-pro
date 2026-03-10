@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
 import { motion } from "framer-motion";
-import { Phone, Mail, MapPin, Clock, Send, CheckCircle } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, Send, CheckCircle, MessageCircle } from "lucide-react";
 
 const contactInfo = [
-  { icon: MapPin, title: "Visit Us", details: ["123 Agricultural Blvd", "Chicago, IL 60601"], color: "bg-blue-100 text-blue-600" },
-  { icon: Phone, title: "Call Us", details: ["(312) 555-AGRO", "(312) 555-2476"], color: "bg-emerald-100 text-emerald-600" },
+  { icon: MapPin, title: "Visit Us", details: ["P.O. Box 7, 40101 Ahero", "Ahero, Kisumu County"], color: "bg-blue-100 text-blue-600" },
+  { icon: Phone, title: "Call Us", details: ["+254 757 790 379", "Mon - Sat: 8AM - 6PM"], color: "bg-emerald-100 text-emerald-600" },
   { icon: Mail, title: "Email Us", details: ["info@chicagoagro.com", "support@chicagoagro.com"], color: "bg-purple-100 text-purple-600" },
   { icon: Clock, title: "Working Hours", details: ["Mon - Fri: 8AM - 6PM", "Sat: 9AM - 4PM"], color: "bg-amber-100 text-amber-600" },
 ];
 
 const faqs = [
-  { q: "Do you offer bulk discounts?", a: "Yes! Orders over KSh 50,000 get 10% off." },
-  { q: "What is your delivery time?", a: "1-2 days Chicago, 3-5 days Midwest." },
-  { q: "Do you offer credit accounts?", a: "Yes, for qualified businesses." },
+  { q: "Do you offer bulk discounts?", a: "Yes! Orders over KSh 50,000 get 10% off. Contact us for custom pricing." },
+  { q: "What is your delivery time?", a: "1–2 days within Kisumu, 2–4 days upcountry Kenya." },
+  { q: "How do I pay?", a: "We accept Equity Paybill 247247, Account 0790026955 (Chicago Agro Supplies Limited, Kakamega Branch) and Cash on Delivery." },
+  { q: "Do you offer credit accounts?", a: "Yes, for qualified businesses. Contact us to apply." },
 ];
 
 export default function Contact() {
@@ -21,6 +22,18 @@ export default function Contact() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Send message via WhatsApp
+    const msg =
+      `📩 *New Inquiry - Chicago Agro Supplies*%0A%0A` +
+      `*Name:* ${formData.name}%0A` +
+      `*Email:* ${formData.email}%0A` +
+      `*Phone:* ${formData.phone}%0A` +
+      `*Subject:* ${formData.subject}%0A%0A` +
+      `*Message:*%0A${formData.message}`;
+
+    window.open(`https://wa.me/254757790379?text=${msg}`, "_blank");
+
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 4000);
     setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
@@ -29,6 +42,7 @@ export default function Contact() {
   return (
     <div className="min-h-screen pt-20">
 
+      {/* Hero */}
       <section className="py-20 bg-gradient-to-br from-emerald-800 to-green-900 text-white">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -43,6 +57,7 @@ export default function Contact() {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-6">
 
+          {/* Contact Cards */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
             {contactInfo.map((info, idx) => (
               <motion.div
@@ -65,14 +80,15 @@ export default function Contact() {
 
           <div className="grid lg:grid-cols-2 gap-12">
 
+            {/* Contact Form */}
             <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
               <h2 className="text-3xl font-bold text-gray-900 mb-2">Send Us a Message</h2>
-              <p className="text-gray-500 mb-8">We will get back to you within 24 hours</p>
+              <p className="text-gray-500 mb-8">We'll get back to you via WhatsApp within a few hours</p>
 
               {submitted && (
                 <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6">
                   <CheckCircle className="w-5 h-5 text-emerald-600" />
-                  <p className="text-emerald-700 font-medium">Message sent successfully!</p>
+                  <p className="text-emerald-700 font-medium">Message sent to our WhatsApp!</p>
                 </div>
               )}
 
@@ -83,7 +99,7 @@ export default function Contact() {
                     <input type="text" required value={formData.name}
                       onChange={e => setFormData({...formData, name: e.target.value})}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      placeholder="John Smith" />
+                      placeholder="John Kamau" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -100,7 +116,7 @@ export default function Contact() {
                     <input type="tel" value={formData.phone}
                       onChange={e => setFormData({...formData, phone: e.target.value})}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      placeholder="(312) 555-0000" />
+                      placeholder="0712 345 678" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
@@ -108,10 +124,12 @@ export default function Contact() {
                       onChange={e => setFormData({...formData, subject: e.target.value})}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
                       <option value="">Select Subject</option>
-                      <option value="products">Product Inquiry</option>
-                      <option value="order">Order Support</option>
-                      <option value="delivery">Delivery Issue</option>
-                      <option value="other">Other</option>
+                      <option value="Product Inquiry">Product Inquiry</option>
+                      <option value="Order Support">Order Support</option>
+                      <option value="Delivery Issue">Delivery Issue</option>
+                      <option value="Bulk Order">Bulk Order</option>
+                      <option value="Payment">Payment</option>
+                      <option value="Other">Other</option>
                     </select>
                   </div>
                 </div>
@@ -126,28 +144,58 @@ export default function Contact() {
 
                 <button type="submit"
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors">
-                  <Send className="w-5 h-5" />
-                  Send Message
+                  <MessageCircle className="w-5 h-5" />
+                  Send via WhatsApp
                 </button>
               </form>
             </motion.div>
 
+            {/* Map + FAQ */}
             <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
               <h2 className="text-3xl font-bold text-gray-900 mb-2">Find Us Here</h2>
-              <p className="text-gray-500 mb-8">Visit our main office and warehouse</p>
+              <p className="text-gray-500 mb-8">Visit our office and warehouse in Ahero, Kisumu</p>
 
-              <div className="rounded-2xl overflow-hidden shadow-lg h-64 bg-emerald-50 flex items-center justify-center border border-emerald-100 mb-8">
-                <div className="text-center">
-                  <MapPin className="w-16 h-16 text-emerald-600 mx-auto mb-4" />
-                  <h3 className="font-bold text-gray-900 text-xl mb-2">123 Agricultural Blvd</h3>
-                  <p className="text-gray-500">Chicago, IL 60601</p>
-                  <a href="https://maps.google.com" target="_blank" rel="noreferrer"
-                    className="inline-block mt-4 bg-emerald-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-emerald-700 transition-colors">
-                    Open in Google Maps
-                  </a>
+              {/* Google Map Embed - Ahero, Kisumu */}
+              <div className="rounded-2xl overflow-hidden shadow-lg h-64 mb-8 border border-gray-100">
+                <iframe
+                  title="Chicago Agro Supplies Location"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  src="https://www.google.com/maps/embed/v1/place?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&q=Ahero,Kisumu,Kenya">
+                </iframe>
+              </div>
+
+              {/* Payment Info */}
+              <div className="bg-blue-50 rounded-2xl p-5 border border-blue-100 mb-6">
+                <p className="font-bold text-blue-900 mb-3">💳 Payment Details</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Bank</span>
+                    <span className="font-semibold text-gray-800">Equity Bank</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Paybill</span>
+                    <span className="font-semibold text-gray-800">247247</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Account No.</span>
+                    <span className="font-semibold text-gray-800">0790026955</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Account Name</span>
+                    <span className="font-semibold text-gray-800">Chicago Agro Supplies Limited</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Branch</span>
+                    <span className="font-semibold text-gray-800">Kakamega</span>
+                  </div>
                 </div>
               </div>
 
+              {/* FAQ */}
               <div className="space-y-4">
                 <h3 className="font-bold text-gray-900 text-lg">Quick FAQ</h3>
                 {faqs.map((faq, i) => (

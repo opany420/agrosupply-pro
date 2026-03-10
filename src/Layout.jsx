@@ -174,7 +174,7 @@ export default function Layout({ children }) {
                 <li>P.O. Box 7, 40101 Ahero</li>
                 <li>Kisumu County, Kenya</li>
                 <li>+254 757 790 379</li>
-                <li>info@chicagoagro.com</li>
+                <li>rizikisuppliers@gmail.com</li>
                 <li className="pt-2">
                   <a href="https://wa.me/254757790379" target="_blank" rel="noreferrer"
                     className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">

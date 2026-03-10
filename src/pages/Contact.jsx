@@ -5,7 +5,7 @@ import { Phone, Mail, MapPin, Clock, Send, CheckCircle, MessageCircle } from "lu
 const contactInfo = [
   { icon: MapPin, title: "Visit Us", details: ["P.O. Box 7, 40101 Ahero", "Ahero, Kisumu County"], color: "bg-blue-100 text-blue-600" },
   { icon: Phone, title: "Call Us", details: ["+254 757 790 379", "Mon - Sat: 8AM - 6PM"], color: "bg-emerald-100 text-emerald-600" },
-  { icon: Mail, title: "Email Us", details: ["info@chicagoagro.com", "support@chicagoagro.com"], color: "bg-purple-100 text-purple-600" },
+  { icon: Mail, title: "Email Us", details: ["rizikisuppliers@gmail.com", "support@rizikisuppliers.com"], color: "bg-purple-100 text-purple-600" },
   { icon: Clock, title: "Working Hours", details: ["Mon - Fri: 8AM - 6PM", "Sat: 9AM - 4PM"], color: "bg-amber-100 text-amber-600" },
 ];
 

@@ -1,3 +1,4 @@
+import { supabase } from '../supabase';
 import React, { useState } from 'react';
 import { motion } from "framer-motion";
 import { 
@@ -89,7 +90,7 @@ export default function Dashboard() {
         </nav>
 
         <div className="p-4 border-t border-gray-700">
-          <button onClick={() => window.location.href = '/'}
+          <button onClick={async () => { await supabase.auth.signOut(); window.location.href = '/login'; }}
             className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white transition-all">
             <LogOut className="w-5 h-5 flex-shrink-0" />
             {sidebarOpen && <span className="font-medium text-sm">Exit Dashboard</span>}

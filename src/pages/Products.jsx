@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from "framer-motion";
 import { Search, ShoppingCart } from "lucide-react";
 import { useCart } from '../CartContext';
 import { Link } from 'react-router-dom';
+import { supabase } from '../supabase';
 
-const products = [
+const hardcodedProducts = [
   { id: 1, category: "irrigation", name: "Drip Irrigation Kit (1 Acre)", description: "Complete drip irrigation system for 1 acre. Includes mainline, drip tapes, fittings and filter.", price: 32000, unit: "kit", stock: 25, image: "https://grekkon.co.ke/wp-content/uploads/2021/04/grekkon-vegetable-drip-irrigation.jpg" },
   { id: 2, category: "irrigation", name: "Sprinkler Irrigation Kit", description: "Overhead sprinkler system for vegetables and nurseries. Covers up to 0.5 acres.", price: 15000, unit: "kit", stock: 20, image: "https://aquahubirrigation.co.ke/wp-content/uploads/2022/12/Greenhouse-88.png" },
   { id: 3, category: "irrigation", name: "Water Pump (1HP Petrol)", description: "Portable petrol-powered water pump for field irrigation and water transfer.", price: 18500, unit: "unit", stock: 30, image: "https://www.waterpumps.co.ke/images/1.jpg" },
@@ -33,7 +34,7 @@ const products = [
   { id: 26, category: "seeds", name: "H614D Maize Seeds", description: "Kenya Seed Company H614D hybrid maize, suited for low to mid altitude areas.", price: 950, unit: "2kg bag", stock: 250, image: "https://farmbizafrica.com/wp-content/uploads/2019/11/H614_maize_seed-1.jpg" },
 ];
 
-const categories = [
+const categoryList = [
   { value: "all", label: "All Products" },
   { value: "seeds", label: "Seeds" },
   { value: "fertilizers", label: "Fertilizers" },
@@ -47,11 +48,34 @@ const categories = [
 export default function Products() {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
+  const [dbProducts, setDbProducts] = useState([]);
   const { addToCart } = useCart();
 
-  const filtered = products.filter(p => {
+  useEffect(() => {
+    supabase.from('products').select('*').order('created_at', { ascending: false })
+      .then(({ data }) => {
+        if (data && data.length > 0) setDbProducts(data);
+      });
+  }, []);
+
+  // Merge: DB products first (new ones), then hardcoded
+  const allProducts = [
+    ...dbProducts.map(p => ({
+      id: `db-${p.id}`,
+      category: (p.category || "").toLowerCase(),
+      name: p.name,
+      description: p.description || "Quality agricultural product from Chicago Agro Supplies.",
+      price: Number(p.price),
+      unit: "unit",
+      stock: p.stock,
+      image: p.image || "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=80",
+    })),
+    ...hardcodedProducts,
+  ];
+
+  const filtered = allProducts.filter(p => {
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) ||
-                       p.description.toLowerCase().includes(search.toLowerCase());
+                        p.description.toLowerCase().includes(search.toLowerCase());
     const matchCat = activeCategory === 'all' || p.category === activeCategory;
     return matchSearch && matchCat;
   });
@@ -78,10 +102,12 @@ export default function Products() {
         </div>
 
         <div className="flex flex-wrap gap-2 mb-8">
-          {categories.map(cat => (
+          {categoryList.map(cat => (
             <button key={cat.value} onClick={() => setActiveCategory(cat.value)}
               className={"px-4 py-2 rounded-full font-medium text-sm transition-all " + (
-                activeCategory === cat.value ? "bg-emerald-600 text-white shadow-md" : "bg-white text-gray-600 hover:bg-emerald-50 border border-gray-200"
+                activeCategory === cat.value
+                  ? "bg-emerald-600 text-white shadow-md"
+                  : "bg-white text-gray-600 hover:bg-emerald-50 border border-gray-200"
               )}>
               {cat.label}
             </button>
@@ -92,18 +118,22 @@ export default function Products() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filtered.map((product, idx) => (
-            <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
+            <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.03 }}
               className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group border border-gray-100">
-              <Link to={"/products/" + product.id}>
+              <Link to={`/products/${product.id}`}>
                 <div className="relative h-48 overflow-hidden bg-gray-100">
                   <img src={product.image} alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     onError={e => e.target.src = "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=80"} />
+                  {String(product.id).startsWith('db-') && (
+                    <span className="absolute top-2 left-2 bg-emerald-600 text-white text-xs font-bold px-2 py-1 rounded-full">New</span>
+                  )}
                 </div>
               </Link>
               <div className="p-4">
                 <span className="text-xs text-emerald-600 font-semibold uppercase tracking-wide">{product.category}</span>
-                <Link to={"/products/" + product.id}>
+                <Link to={`/products/${product.id}`}>
                   <h3 className="font-bold text-gray-900 mt-1 mb-2 group-hover:text-emerald-600 transition-colors">{product.name}</h3>
                 </Link>
                 <p className="text-gray-500 text-sm mb-4 line-clamp-2">{product.description}</p>

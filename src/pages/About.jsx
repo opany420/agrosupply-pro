@@ -31,7 +31,7 @@ export default function About() {
       {/* Hero */}
       <section className="relative py-24 bg-gradient-to-br from-emerald-800 to-green-900 overflow-hidden">
         <div className="absolute inset-0 opacity-20">
-          <img src="https://images.unsplash.com/photo-1560493676-04071c5f467b?w=1920&q=80" alt="Farm" className="w-full h-full object-cover" />
+          <img src="https://images.unsplash.com/photo-1560493676-04071c5f467b?w=1920&q=80" alt="Agricultural fields in the Kenyan countryside" className="w-full h-full object-cover" />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-6 text-center text-white">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
@@ -80,7 +80,7 @@ export default function About() {
             </motion.div>
 
             <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="relative">
-              <img src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=800&q=80" alt="Farm"
+              <img src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=800&q=80" alt="Chicago Agro Supplies team at work"
                 className="rounded-2xl w-full h-96 object-cover shadow-xl" />
               <div className="absolute -bottom-6 -left-6 bg-emerald-600 text-white p-6 rounded-2xl shadow-xl">
                 <div className="text-3xl font-bold">4.9 ⭐</div>

@@ -28,6 +28,6 @@ export const WHATSAPP = {
 
 export const CURRENCY = {
   code: 'KES',
-  symbol: 'KSh',
+  symbol: 'KES',
   locale: 'en-KE',
 };

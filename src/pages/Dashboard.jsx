@@ -4,9 +4,10 @@ import {
   LayoutDashboard, Package, Users, ShoppingCart,
   TrendingUp, Bell, Settings, LogOut, Menu, X,
   Banknote, ArrowUp, ArrowDown,
-  Search, Edit, Trash2, Plus, Leaf, Check, AlertCircle, Info
+  Search, Edit, Trash2, Plus, Leaf, Check, AlertCircle, Info, Upload
 } from "lucide-react";
 import { supabase } from '../supabase';
+import { formatCurrency, formatDate } from '../utils';
 import {
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
   LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -33,6 +34,24 @@ const statusColors = {
 
 const categories = ["Seeds", "Fertilizers", "Pesticides", "Equipment", "Tools", "Animal Feed", "Irrigation"];
 const emptyProduct = { name: "", category: "Seeds", price: "", stock: "", description: "", image: "", unit: "unit" };
+
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
+
+async function uploadProductImage(file) {
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    throw new Error('Only JPEG, PNG, WebP, and GIF images are allowed');
+  }
+  if (file.size > MAX_IMAGE_SIZE) {
+    throw new Error('Image must be smaller than 5 MB');
+  }
+  const ext = file.name.split('.').pop();
+  const fileName = `${Date.now()}-${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from('product-images').upload(fileName, file);
+  if (error) throw error;
+  const { data } = supabase.storage.from('product-images').getPublicUrl(fileName);
+  return data.publicUrl;
+}
 
 export default function Dashboard() {
   const [activePage, setActivePage] = useState("dashboard");
@@ -66,6 +85,7 @@ export default function Dashboard() {
   const [newProduct, setNewProduct] = useState(emptyProduct);
   const [newClient, setNewClient] = useState({ name: "", email: "", phone: "", status: "Active" });
   const [productLoading, setProductLoading] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
   const [clientLoading, setClientLoading] = useState(false);
 
   useEffect(() => {
@@ -122,7 +142,7 @@ export default function Dashboard() {
     const { data: latest } = await supabase.from('orders').select('order_number').order('created_at', { ascending: false }).limit(1).single();
     const lastNum = latest?.order_number ? parseInt(latest.order_number.replace('ORD-', ''), 10) || 0 : 0;
     const order_number = `ORD-${String(lastNum + 1).padStart(3, "0")}`;
-    const amount = newOrder.amount.startsWith("KES") ? newOrder.amount : `KES ${Number(newOrder.amount).toLocaleString()}`;
+    const amount = newOrder.amount.startsWith("KES") ? newOrder.amount : formatCurrency(Number(newOrder.amount));
     const { data } = await supabase.from('orders').insert([{ order_number, client: newOrder.client, product: newOrder.product, amount, status: newOrder.status }]).select().single();
     if (data) {
       setOrders([data, ...orders]);
@@ -149,6 +169,18 @@ export default function Dashboard() {
   };
 
   // Products CRUD
+  const handleImageUpload = async (file, setter, current) => {
+    setImageUploading(true);
+    try {
+      const url = await uploadProductImage(file);
+      setter({ ...current, image: url });
+    } catch (err) {
+      alert(err.message || 'Image upload failed');
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
   const handleAddProduct = async () => {
     if (!newProduct.name || !newProduct.price || !newProduct.stock) return;
     setProductLoading(true);
@@ -214,10 +246,8 @@ export default function Dashboard() {
 
   const markAllRead = () => setNotifications(n => n.map(x => ({ ...x, read: true })));
 
-  const formatDate = (d) => d ? new Date(d).toLocaleDateString("en-KE", { month: "short", day: "numeric", year: "numeric" }) : '';
-
   const statsCards = [
-    { label: "Total Revenue", value: `KES ${stats.revenue.toLocaleString()}`, icon: Banknote, color: "bg-emerald-500", up: true, change: "Live" },
+    { label: "Total Revenue", value: formatCurrency(stats.revenue), icon: Banknote, color: "bg-emerald-500", up: true, change: "Live" },
     { label: "Total Orders", value: stats.ordersCount.toLocaleString(), icon: ShoppingCart, color: "bg-blue-500", up: true, change: "Live" },
     { label: "Total Clients", value: stats.clientsCount.toLocaleString(), icon: Users, color: "bg-purple-500", up: true, change: "Live" },
     { label: "Products", value: stats.productsCount.toLocaleString(), icon: Package, color: "bg-amber-500", up: true, change: "Live" },
@@ -378,7 +408,7 @@ export default function Dashboard() {
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-sm font-medium text-gray-900">{product.name}</span>
-                              <span className="text-sm font-bold text-emerald-600">KES {Number(product.price).toLocaleString()}</span>
+                              <span className="text-sm font-bold text-emerald-600">{formatCurrency(product.price)}</span>
                             </div>
                             <div className="w-full bg-gray-100 rounded-full h-2">
                               <div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${Math.min((product.stock / 600) * 100, 100)}%` }} />
@@ -540,7 +570,7 @@ export default function Dashboard() {
                                 </div>
                               </td>
                               <td className="px-6 py-4"><span className="bg-emerald-50 text-emerald-700 text-xs font-semibold px-2 py-1 rounded-full">{product.category}</span></td>
-                              <td className="px-6 py-4 text-sm font-semibold text-emerald-600">KES {Number(product.price).toLocaleString()}</td>
+                              <td className="px-6 py-4 text-sm font-semibold text-emerald-600">{formatCurrency(product.price)}</td>
                               <td className="px-6 py-4"><span className={`text-sm font-medium ${product.stock < 20 ? 'text-red-600' : 'text-gray-900'}`}>{product.stock} units {product.stock < 20 && "⚠️"}</span></td>
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-2">
@@ -632,7 +662,7 @@ export default function Dashboard() {
                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                             <XAxis dataKey="date" tick={{ fontSize: 12 }} />
                             <YAxis tick={{ fontSize: 12 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
-                            <Tooltip formatter={v => [`KES ${Number(v).toLocaleString()}`, 'Revenue']} />
+                            <Tooltip formatter={v => [formatCurrency(v), 'Revenue']} />
                             <Line type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
                           </LineChart>
                         </ResponsiveContainer>
@@ -832,10 +862,18 @@ export default function Dashboard() {
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                  <input type="text" placeholder="https://..." value={newProduct.image}
-                    onChange={e => setNewProduct({ ...newProduct, image: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
+                  <div className="flex gap-2">
+                    <label className={`flex items-center gap-2 px-4 py-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 ${imageUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                      <Upload className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-gray-600">{imageUploading ? 'Uploading...' : 'Upload'}</span>
+                      <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden"
+                        onChange={e => { if (e.target.files[0]) handleImageUpload(e.target.files[0], setNewProduct, newProduct); }} />
+                    </label>
+                    <input type="text" placeholder="or paste image URL..." value={newProduct.image}
+                      onChange={e => setNewProduct({ ...newProduct, image: e.target.value })}
+                      className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                  </div>
                   {newProduct.image && <img src={newProduct.image} alt="Preview" className="mt-2 w-full h-32 object-cover rounded-xl" onError={e => e.target.style.display = 'none'} />}
                 </div>
               </div>
@@ -899,9 +937,18 @@ export default function Dashboard() {
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                  <input type="text" value={editingProduct.image || ''} onChange={e => setEditingProduct({ ...editingProduct, image: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
+                  <div className="flex gap-2">
+                    <label className={`flex items-center gap-2 px-4 py-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 ${imageUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                      <Upload className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-gray-600">{imageUploading ? 'Uploading...' : 'Upload'}</span>
+                      <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden"
+                        onChange={e => { if (e.target.files[0]) handleImageUpload(e.target.files[0], setEditingProduct, editingProduct); }} />
+                    </label>
+                    <input type="text" placeholder="or paste image URL..." value={editingProduct.image || ''}
+                      onChange={e => setEditingProduct({ ...editingProduct, image: e.target.value })}
+                      className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                  </div>
                   {editingProduct.image && <img src={editingProduct.image} alt="Preview" className="mt-2 w-full h-32 object-cover rounded-xl" onError={e => e.target.style.display = 'none'} />}
                 </div>
               </div>

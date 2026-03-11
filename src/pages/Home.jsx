@@ -5,14 +5,15 @@ import { Truck, Shield, Star, Users, Package, Award, Leaf, ArrowRight, Phone } f
 import Reviews from '../components/Reviews';
 
 const categories = [
-  { name: "Seeds", description: "Premium crop seeds for maximum yield", image: "https://farmbizafrica.com/wp-content/uploads/2019/05/chia_seed-1.jpg" },
-  { name: "Fertilizers", description: "Nutrient-rich soil enhancers", image: "https://seedpro.co.ke/wp-content/uploads/2025/09/WhatsApp-Image-2025-09-25-at-21.18.35_b78930ad-1170x640.jpg" },
-  { name: "Pesticides", description: "Effective crop protection", image: "https://www.nedt.org/wp-content/uploads/2025/03/Household-Pesticides-1024x682.jpg" },
-  { name: "Equipment", description: "Modern farming machinery", image: "https://i.pinimg.com/474x/91/4e/4a/914e4ad2c5399cd07b44fb780160ea12.jpg" },
-  { name: "Tools", description: "Essential hand and power tools", image: "https://cdn-ildgchb.nitrocdn.com/KbsSPFmBuXcvyNIOGVWHKcnwviFfUwUp/assets/images/optimized/rev-f115155/aspee.com/blog/wp-content/uploads/2023/11/Farm-tools-and-equipment.png" },
-  { name: "Animal Feed", description: "Nutritious livestock feed", image: "https://www.kwmach.com/i/images/animal-feed-formulate-by-nutrition-needs.webp" },
-  { name: "Irrigation", description: "Water management systems", image: "https://fruitgrowers.com/wp-content/uploads/2019/06/watering-crops-1024x614.jpg" },
+  { name: "Seeds", description: "Premium crop seeds for maximum yield", image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&q=80" },
+  { name: "Fertilizers", description: "Nutrient-rich soil enhancers", image: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&q=80" },
+  { name: "Pesticides", description: "Effective crop protection", image: "https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?w=400&q=80" },
+  { name: "Equipment", description: "Modern farming machinery", image: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=400&q=80" },
+  { name: "Tools", description: "Essential hand and power tools", image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&q=80" },
+  { name: "Animal Feed", description: "Nutritious livestock feed", image: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=400&q=80" },
+  { name: "Irrigation", description: "Water management systems", image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80" },
 ];
+
 const stats = [
   { value: "5,000+", label: "Happy Farmers", icon: Users },
   { value: "10,000+", label: "Products Sold", icon: Package },
@@ -37,8 +38,8 @@ export default function Home() {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://static.vecteezy.com/system/resources/thumbnails/074/517/458/small/bright-sun-rays-illuminate-rows-of-green-plants-in-a-cultivated-field-at-sunrise-with-mountains-in-the-background-photo.jpg"
-            alt="Farm"
+            src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1920&q=80"
+            alt="Lush green farmland at sunrise in Kenya"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
@@ -168,7 +169,7 @@ export default function Home() {
       {/* CTA Section */}
       <section className="py-24 bg-emerald-800 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
-          <img src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=1920&q=80" alt="Farm" className="w-full h-full object-cover" />
+          <img src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=1920&q=80" alt="Farmers working together at harvest time" className="w-full h-full object-cover" />
         </div>
         <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>

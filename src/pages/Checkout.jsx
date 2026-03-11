@@ -4,6 +4,8 @@ import { useCart } from "../CartContext";
 import { Link } from "react-router-dom";
 import { ShoppingBag, CheckCircle, Truck, CreditCard, User, MapPin, Phone, Mail, ArrowLeft, ArrowRight, MessageCircle } from "lucide-react";
 import { supabase } from "../supabase";
+import emailjs from "@emailjs/browser";
+import { formatCurrency } from "../utils";
 
 export default function Checkout() {
   const { cart, totalPrice, clearCart } = useCart();
@@ -56,7 +58,7 @@ export default function Checkout() {
         order_number,
         client: `${formData.firstName} ${formData.lastName}`,
         product: item.name,
-        amount: `KES ${(item.price * item.quantity).toLocaleString()}`,
+        amount: formatCurrency(item.price * item.quantity),
         status: 'Pending',
         phone: formData.phone,
       }]);
@@ -64,7 +66,7 @@ export default function Checkout() {
 
     // Build WhatsApp message
     const orderLines = cart.map(item =>
-      `• ${item.name} x${item.quantity} = KES ${(item.price * item.quantity).toLocaleString()}`
+      `• ${item.name} x${item.quantity} = ${formatCurrency(item.price * item.quantity)}`
     ).join("%0A");
 
     const message =
@@ -75,8 +77,33 @@ export default function Checkout() {
       `Email: ${formData.email}%0A` +
       `Address: ${formData.address}, ${formData.city}, ${formData.county}%0A%0A` +
       `*Order Items:*%0A${orderLines}%0A%0A` +
-      `*Total: KES ${totalPrice.toLocaleString()}*%0A` +
+      `*Total: ${formatCurrency(totalPrice)}*%0A` +
       `Payment: ${formData.paymentMethod === "equity" ? "Equity Paybill" : "Cash on Delivery"}`;
+
+    // Send confirmation email via EmailJS (best-effort, non-blocking)
+    const emailServiceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+    const emailTemplateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+    const emailPublicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+    if (emailServiceId && emailTemplateId && emailPublicKey) {
+      const itemsList = cart.map(item =>
+        `${item.name} x${item.quantity} = ${formatCurrency(item.price * item.quantity)}`
+      ).join("\n");
+
+      try {
+        await emailjs.send(emailServiceId, emailTemplateId, {
+          to_name: `${formData.firstName} ${formData.lastName}`,
+          to_email: formData.email,
+          order_items: itemsList,
+          total: formatCurrency(totalPrice),
+          payment_method: formData.paymentMethod === "equity" ? "Equity Paybill" : "Cash on Delivery",
+          address: `${formData.address}, ${formData.city}, ${formData.county}`,
+          phone: formData.phone,
+        }, emailPublicKey);
+      } catch {
+        // Email is best-effort; don't block the order
+      }
+    }
 
     window.open(`https://wa.me/254757790379?text=${message}`, "_blank");
 
@@ -124,7 +151,7 @@ export default function Checkout() {
                 <p>4. Account Number: <strong>0790026955</strong></p>
                 <p>5. Account Name: <strong>Chicago Agro Supplies Limited</strong></p>
                 <p>6. Branch: <strong>Kakamega</strong></p>
-                <p>7. Amount: <strong>KES {totalPrice.toLocaleString()}</strong></p>
+                <p>7. Amount: <strong>{formatCurrency(totalPrice)}</strong></p>
               </div>
               <p className="text-blue-600 text-xs mt-3">📌 Send payment screenshot to our WhatsApp to confirm your order</p>
             </div>
@@ -299,7 +326,7 @@ export default function Checkout() {
                           ["Account Number", "0790026955"],
                           ["Account Name", "Chicago Agro Supplies Limited"],
                           ["Branch", "Kakamega"],
-                          ["Amount", `KES ${totalPrice.toLocaleString()}`],
+                          ["Amount", formatCurrency(totalPrice)],
                         ].map(([label, value]) => (
                           <div key={label} className="flex justify-between bg-white rounded-lg px-3 py-2">
                             <span className="text-gray-500">{label}</span>
@@ -403,7 +430,7 @@ export default function Checkout() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-gray-900 text-sm truncate">{item.name}</p>
                       <p className="text-gray-500 text-xs">Qty: {item.quantity}</p>
-                      <p className="text-emerald-600 font-bold text-sm">KES {(item.price * item.quantity).toLocaleString()}</p>
+                      <p className="text-emerald-600 font-bold text-sm">{formatCurrency(item.price * item.quantity)}</p>
                     </div>
                   </div>
                 ))}
@@ -411,7 +438,7 @@ export default function Checkout() {
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Subtotal</span>
-                  <span className="font-medium">KES {totalPrice.toLocaleString()}</span>
+                  <span className="font-medium">{formatCurrency(totalPrice)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Delivery</span>
@@ -419,7 +446,7 @@ export default function Checkout() {
                 </div>
                 <div className="flex justify-between text-lg font-bold pt-2 border-t">
                   <span>Total</span>
-                  <span className="text-emerald-600">KES {totalPrice.toLocaleString()}</span>
+                  <span className="text-emerald-600">{formatCurrency(totalPrice)}</span>
                 </div>
               </div>
             </div>

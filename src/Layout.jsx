@@ -32,8 +32,9 @@ export default function Layout({ children }) {
       {/* WhatsApp Floating Button */}
       <a href="https://wa.me/254757790379?text=Hello! I am interested in your agricultural products."
         target="_blank" rel="noreferrer"
+        aria-label="Chat with us on WhatsApp"
         className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 group">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" className="w-8 h-8" />
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="" className="w-8 h-8" />
         <span className="absolute right-16 bg-gray-900 text-white text-xs px-3 py-1 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
           Chat on WhatsApp
         </span>
@@ -65,6 +66,7 @@ export default function Layout({ children }) {
               ))}
               <div className="flex items-center gap-3">
                 <button onClick={() => setIsCartOpen(true)}
+                  aria-label={`Shopping cart${totalItems > 0 ? `, ${totalItems} items` : ''}`}
                   className={`relative p-2 rounded-lg transition-colors ${isScrolled || !isHome ? 'hover:bg-gray-100 text-gray-700' : 'hover:bg-white/20 text-white'}`}>
                   <ShoppingCart className="w-6 h-6" />
                   {totalItems > 0 && (
@@ -89,6 +91,7 @@ export default function Layout({ children }) {
             {/* Mobile */}
             <div className="lg:hidden flex items-center gap-3">
               <button onClick={() => setIsCartOpen(true)}
+                aria-label={`Shopping cart${totalItems > 0 ? `, ${totalItems} items` : ''}`}
                 className={`relative p-2 rounded-lg ${isScrolled || !isHome ? 'text-gray-700' : 'text-white'}`}>
                 <ShoppingCart className="w-6 h-6" />
                 {totalItems > 0 && (
@@ -98,7 +101,9 @@ export default function Layout({ children }) {
                 )}
               </button>
               <button className={`${isScrolled || !isHome ? 'text-gray-900' : 'text-white'}`}
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={isMobileMenuOpen}>
                 {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
             </div>

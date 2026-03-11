@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Search, ShoppingCart } from "lucide-react";
 import { useCart } from '../CartContext';
 import { Link } from 'react-router-dom';
+import { formatCurrency } from '../utils';
 import { supabase } from '../supabase';
 
 const categoryList = [
@@ -132,7 +133,7 @@ export default function Products() {
                     <p className="text-gray-500 text-sm mb-4 line-clamp-2">{product.description}</p>
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-xl font-bold text-emerald-600">KES {Number(product.price).toLocaleString()}</span>
+                        <span className="text-xl font-bold text-emerald-600">{formatCurrency(product.price)}</span>
                         <span className="text-gray-400 text-sm ml-1">/{product.unit || 'unit'}</span>
                       </div>
                       <button onClick={() => addToCart({ ...product, price: Number(product.price) })}

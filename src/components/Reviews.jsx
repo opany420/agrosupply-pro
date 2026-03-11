@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from "framer-motion";
 import { Star, ThumbsUp, Quote } from "lucide-react";
 import { supabase } from '../supabase';
+import { formatDate } from '../utils';
 
 export default function Reviews() {
   const [reviews, setReviews] = useState([]);
@@ -60,8 +61,6 @@ export default function Reviews() {
   const avgRating = reviews.length
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
     : '5.0';
-
-  const formatDate = (d) => d ? new Date(d).toLocaleDateString("en-KE", { month: "short", day: "numeric", year: "numeric" }) : '';
 
   return (
     <section className="py-24 bg-gray-50">

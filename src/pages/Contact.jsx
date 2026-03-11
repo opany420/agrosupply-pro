@@ -10,7 +10,7 @@ const contactInfo = [
 ];
 
 const faqs = [
-  { q: "Do you offer bulk discounts?", a: "Yes! Orders over KSh 50,000 get 10% off. Contact us for custom pricing." },
+  { q: "Do you offer bulk discounts?", a: "Yes! Orders over KES 50,000 get 10% off. Contact us for custom pricing." },
   { q: "What is your delivery time?", a: "1–2 days within Kisumu, 2–4 days upcountry Kenya." },
   { q: "How do I pay?", a: "We accept Equity Paybill 247247, Account 0790026955 (Chicago Agro Supplies Limited, Kakamega Branch) and Cash on Delivery." },
   { q: "Do you offer credit accounts?", a: "Yes, for qualified businesses. Contact us to apply." },

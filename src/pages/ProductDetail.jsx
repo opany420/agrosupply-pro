@@ -4,6 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ShoppingCart, Star, CheckCircle, ArrowLeft, Truck, Shield, Award } from "lucide-react";
 import { useCart } from '../CartContext';
 import { supabase } from '../supabase';
+import { formatCurrency } from '../utils';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -119,7 +120,7 @@ export default function ProductDetail() {
             </div>
 
             <div className="mb-6">
-              <span className="text-4xl font-bold text-emerald-600">KES {product.price.toLocaleString()}</span>
+              <span className="text-4xl font-bold text-emerald-600">{formatCurrency(product.price)}</span>
               <span className="text-gray-500 ml-2">per {product.unit}</span>
             </div>
 
@@ -152,7 +153,7 @@ export default function ProductDetail() {
               className={"w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all " + (
                 added ? "bg-green-500 text-white" : "bg-emerald-600 hover:bg-emerald-700 text-white"
               )}>
-              {added ? <><CheckCircle className="w-6 h-6" /> Added to Cart!</> : <><ShoppingCart className="w-6 h-6" /> Add to Cart — KES {(product.price * quantity).toLocaleString()}</>}
+              {added ? <><CheckCircle className="w-6 h-6" /> Added to Cart!</> : <><ShoppingCart className="w-6 h-6" /> Add to Cart — {formatCurrency(product.price * quantity)}</>}
             </button>
 
             <div className="grid grid-cols-3 gap-4 mt-6">
@@ -183,7 +184,7 @@ export default function ProductDetail() {
                     </div>
                     <div className="p-4">
                       <h3 className="font-bold text-gray-900 mb-1">{p.name}</h3>
-                      <span className="text-emerald-600 font-bold">KES {p.price.toLocaleString()}</span>
+                      <span className="text-emerald-600 font-bold">{formatCurrency(p.price)}</span>
                       <span className="text-gray-400 text-sm ml-1">/{p.unit}</span>
                     </div>
                   </div>

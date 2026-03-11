@@ -5,13 +5,13 @@ import { Truck, Shield, Star, Users, Package, Award, Leaf, ArrowRight, Phone } f
 import Reviews from '../components/Reviews';
 
 const categories = [
-  { name: "Seeds", description: "Premium crop seeds for maximum yield", image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&q=80" },
-  { name: "Fertilizers", description: "Nutrient-rich soil enhancers", image: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&q=80" },
-  { name: "Pesticides", description: "Effective crop protection", image: "https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?w=400&q=80" },
-  { name: "Equipment", description: "Modern farming machinery", image: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=400&q=80" },
-  { name: "Tools", description: "Essential hand and power tools", image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&q=80" },
-  { name: "Animal Feed", description: "Nutritious livestock feed", image: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=400&q=80" },
-  { name: "Irrigation", description: "Water management systems", image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80" },
+  { name: "Seeds", description: "Premium crop seeds for maximum yield", image: "https://farmbizafrica.com/wp-content/uploads/2019/05/chia_seed-1.jpg" },
+  { name: "Fertilizers", description: "Nutrient-rich soil enhancers", image: "https://seedpro.co.ke/wp-content/uploads/2025/09/WhatsApp-Image-2025-09-25-at-21.18.35_b78930ad-1170x640.jpg" },
+  { name: "Pesticides", description: "Effective crop protection", image: "https://www.nedt.org/wp-content/uploads/2025/03/Household-Pesticides-1024x682.jpg" },
+  { name: "Equipment", description: "Modern farming machinery", image: "https://i.pinimg.com/474x/91/4e/4a/914e4ad2c5399cd07b44fb780160ea12.jpg" },
+  { name: "Tools", description: "Essential hand and power tools", image: "https://cdn-ildgchb.nitrocdn.com/KbsSPFmBuXcvyNIOGVWHKcnwviFfUwUp/assets/images/optimized/rev-f115155/aspee.com/blog/wp-content/uploads/2023/11/Farm-tools-and-equipment.png" },
+  { name: "Animal Feed", description: "Nutritious livestock feed", image: "https://www.kwmach.com/i/images/animal-feed-formulate-by-nutrition-needs.webp" },
+  { name: "Irrigation", description: "Water management systems", image: "https://fruitgrowers.com/wp-content/uploads/2019/06/watering-crops-1024x614.jpg" },
 ];
 
 const stats = [

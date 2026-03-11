@@ -22,6 +22,8 @@ export default function Products() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PRODUCTS_PER_PAGE = 12;
   const { addToCart } = useCart();
 
   useEffect(() => {
@@ -49,6 +51,15 @@ export default function Products() {
     const matchCat = activeCategory === 'all' || p.category === activeCategory;
     return matchSearch && matchCat;
   });
+
+  const totalPages = Math.ceil(filtered.length / PRODUCTS_PER_PAGE);
+  const paginatedProducts = filtered.slice(
+    (currentPage - 1) * PRODUCTS_PER_PAGE,
+    currentPage * PRODUCTS_PER_PAGE
+  );
+
+  // Reset to page 1 when filters change
+  useEffect(() => { setCurrentPage(1); }, [search, activeCategory]);
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
@@ -98,17 +109,17 @@ export default function Products() {
           </div>
         ) : (
           <>
-            <p className="text-gray-500 text-sm mb-6">Showing {filtered.length} products</p>
+            <p className="text-gray-500 text-sm mb-6">Showing {(currentPage - 1) * PRODUCTS_PER_PAGE + 1}–{Math.min(currentPage * PRODUCTS_PER_PAGE, filtered.length)} of {filtered.length} products</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filtered.map((product, idx) => (
+              {paginatedProducts.map((product, idx) => (
                 <motion.div key={product.id}
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.03 }}
                   className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group border border-gray-100">
                   <Link to={`/products/${product.id}`}>
                     <div className="relative h-48 overflow-hidden bg-gray-100">
-                      <img src={product.image} alt={product.name}
+                      <img src={product.image} alt={product.name} loading="lazy"
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         onError={e => e.target.src = "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=80"} />
                     </div>
@@ -138,6 +149,36 @@ export default function Products() {
               <div className="text-center py-16">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">No products found</h3>
                 <p className="text-gray-500">Try a different search or category</p>
+              </div>
+            )}
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-10">
+                <button
+                  onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <button key={page} onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    className={"w-10 h-10 rounded-lg text-sm font-medium transition-all " + (
+                      page === currentPage
+                        ? "bg-emerald-600 text-white shadow-md"
+                        : "border border-gray-200 text-gray-600 hover:bg-emerald-50"
+                    )}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button
+                  onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
               </div>
             )}
           </>

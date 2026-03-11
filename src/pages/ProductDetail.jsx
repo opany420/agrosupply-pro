@@ -92,7 +92,7 @@ export default function ProductDetail() {
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
             className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
             <div className="relative h-96">
-              <img src={product.image} alt={product.name} className="w-full h-full object-cover"
+              <img src={product.image} alt={product.name} loading="lazy" className="w-full h-full object-cover"
                 onError={e => e.target.src = "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=80"} />
               {product.badge && (
                 <span className="absolute top-4 left-4 bg-emerald-600 text-white text-sm font-bold px-4 py-2 rounded-full">
@@ -178,7 +178,7 @@ export default function ProductDetail() {
                 <Link key={p.id} to={"/products/" + p.id}>
                   <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow border border-gray-100">
                     <div className="h-48 overflow-hidden">
-                      <img src={p.image} alt={p.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      <img src={p.image} alt={p.name} loading="lazy" className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                         onError={e => e.target.src = "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=80"} />
                     </div>
                     <div className="p-4">

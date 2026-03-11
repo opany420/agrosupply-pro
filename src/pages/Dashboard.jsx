@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Package, Users, ShoppingCart,
   TrendingUp, Bell, Settings, LogOut, Menu, X,
-  Banknote, Star, ArrowUp, ArrowDown,
-  Search, Edit, Trash2, Plus, Leaf, Check, AlertCircle, Info
+  Banknote, ArrowUp, ArrowDown,
+  Search, Edit, Trash2, Plus, Leaf, Check, AlertCircle, Info, Star
 } from "lucide-react";
 import { supabase } from '../supabase';
 
@@ -32,14 +32,6 @@ const initialOrders = [
   { id: "5", order_number: "ORD-005", client: "James Mwangi", product: "Cattle Feed Premium", amount: "KES 35,475", status: "Cancelled", created_at: "2026-03-03" },
 ];
 
-const topProducts = [
-  { name: "Hybrid Maize Seeds", sales: 342, revenue: "KES 2,026,074", stock: 450 },
-  { name: "NPK Fertilizer", sales: 285, revenue: "KES 1,194,798", stock: 120 },
-  { name: "Irrigation Drip Kit", sales: 198, revenue: "KES 2,298,780", stock: 65 },
-  { name: "Mini Hand Tractor", sales: 45, revenue: "KES 7,540,695", stock: 12 },
-  { name: "Cattle Feed Premium", sales: 167, revenue: "KES 1,184,865", stock: 89 },
-];
-
 const initialClients = [
   { name: "John Kamau", email: "john@email.com", orders: 12, spent: "KES 316,050", status: "Active" },
   { name: "Mary Wanjiku", email: "mary@email.com", orders: 8, spent: "KES 243,810", status: "Active" },
@@ -53,6 +45,14 @@ const initialNotifications = [
   { id: 2, icon: AlertCircle, color: "bg-amber-100 text-amber-600", title: "Low stock alert", desc: "Mini Hand Tractor — only 12 units left", time: "1 hr ago", read: false },
   { id: 3, icon: Check, color: "bg-emerald-100 text-emerald-600", title: "Order delivered", desc: "ORD-004 delivered to Grace Achieng", time: "3 hrs ago", read: false },
   { id: 4, icon: Info, color: "bg-purple-100 text-purple-600", title: "Payment confirmed", desc: "Equity Paybill — KES 41,925 received", time: "5 hrs ago", read: true },
+];
+
+const initialProducts = [
+  { id: "1", name: "Hybrid Maize Seeds", category: "Seeds", price: 1200, stock: 450, sales: 342, revenue: "KES 2,026,074" },
+  { id: "2", name: "NPK Fertilizer", category: "Fertilizers", price: 2500, stock: 120, sales: 285, revenue: "KES 1,194,798" },
+  { id: "3", name: "Irrigation Drip Kit", category: "Irrigation", price: 8500, stock: 65, sales: 198, revenue: "KES 2,298,780" },
+  { id: "4", name: "Mini Hand Tractor", category: "Equipment", price: 45000, stock: 12, sales: 45, revenue: "KES 7,540,695" },
+  { id: "5", name: "Cattle Feed Premium", category: "Animal Feed", price: 1800, stock: 89, sales: 167, revenue: "KES 1,184,865" },
 ];
 
 const statusColors = {
@@ -70,29 +70,40 @@ const productOptions = [
   "Roundup Herbicide", "DAP Fertilizer", "Layers Mash", "Duduthrin"
 ];
 
+const categories = ["Seeds", "Fertilizers", "Pesticides", "Equipment", "Tools", "Animal Feed", "Irrigation"];
+
+const emptyProduct = { name: "", category: "Seeds", price: "", stock: "", description: "", image: "" };
+
 export default function Dashboard() {
   const [activePage, setActivePage] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [orders, setOrders] = useState(initialOrders);
+  const [products, setProducts] = useState(initialProducts);
   const [clients, setClients] = useState(initialClients);
   const [notifications, setNotifications] = useState(initialNotifications);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showNewOrderModal, setShowNewOrderModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showProductModal, setShowProductModal] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [newOrder, setNewOrder] = useState({ client: "", product: "", amount: "", status: "Pending" });
+  const [newProduct, setNewProduct] = useState(emptyProduct);
+  const [productLoading, setProductLoading] = useState(false);
 
   useEffect(() => {
     fetchOrders();
+    fetchProducts();
   }, []);
 
   const fetchOrders = async () => {
-    const { data } = await supabase
-      .from('orders')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const { data } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
     if (data && data.length > 0) setOrders(data);
+  };
+
+  const fetchProducts = async () => {
+    const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+    if (data && data.length > 0) setProducts(data);
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -108,11 +119,7 @@ export default function Dashboard() {
     const order_number = `ORD-${String(orders.length + 1).padStart(3, "0")}`;
     const amount = newOrder.amount.startsWith("KES") ? newOrder.amount : `KES ${Number(newOrder.amount).toLocaleString()}`;
     const { data } = await supabase.from('orders').insert([{
-      order_number,
-      client: newOrder.client,
-      product: newOrder.product,
-      amount,
-      status: newOrder.status,
+      order_number, client: newOrder.client, product: newOrder.product, amount, status: newOrder.status,
     }]).select().single();
     if (data) setOrders([data, ...orders]);
     setNotifications([{
@@ -135,19 +142,43 @@ export default function Dashboard() {
 
   const handleSaveEdit = async () => {
     await supabase.from('orders').update({
-      client: editingOrder.client,
-      product: editingOrder.product,
-      amount: editingOrder.amount,
-      status: editingOrder.status,
+      client: editingOrder.client, product: editingOrder.product,
+      amount: editingOrder.amount, status: editingOrder.status,
     }).eq('id', editingOrder.id);
     setOrders(orders.map(o => o.id === editingOrder.id ? editingOrder : o));
     setShowEditModal(false);
     setEditingOrder(null);
   };
 
-  const markAllRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
+  const handleAddProduct = async () => {
+    if (!newProduct.name || !newProduct.price || !newProduct.stock) return;
+    setProductLoading(true);
+    const { data, error } = await supabase.from('products').insert([{
+      name: newProduct.name,
+      category: newProduct.category,
+      price: Number(newProduct.price),
+      stock: Number(newProduct.stock),
+      description: newProduct.description,
+      image: newProduct.image,
+    }]).select().single();
+    if (data) {
+      setProducts([data, ...products]);
+      setNotifications([{
+        id: Date.now(), icon: Package, color: "bg-emerald-100 text-emerald-600",
+        title: "Product added", desc: `${newProduct.name} added to catalogue`, time: "Just now", read: false
+      }, ...notifications]);
+    }
+    setNewProduct(emptyProduct);
+    setProductLoading(false);
+    setShowProductModal(false);
   };
+
+  const handleDeleteProduct = async (id) => {
+    await supabase.from('products').delete().eq('id', id);
+    setProducts(products.filter(p => p.id !== id));
+  };
+
+  const markAllRead = () => setNotifications(notifications.map(n => ({ ...n, read: true })));
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
@@ -163,12 +194,7 @@ export default function Dashboard() {
           <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
             <Leaf className="w-6 h-6 text-white" />
           </div>
-          {sidebarOpen && (
-            <div>
-              <h1 className="text-white font-bold text-sm">Chicago Agro</h1>
-              <p className="text-gray-400 text-xs">Admin Panel</p>
-            </div>
-          )}
+          {sidebarOpen && <div><h1 className="text-white font-bold text-sm">Chicago Agro</h1><p className="text-gray-400 text-xs">Admin Panel</p></div>}
         </div>
         <nav className="flex-1 p-4 space-y-1">
           {sidebarLinks.map(link => (
@@ -200,15 +226,12 @@ export default function Dashboard() {
             </button>
             <h2 className="text-xl font-bold text-gray-900 capitalize">{activePage}</h2>
           </div>
-          <div className="flex items-center gap-3 relative">
+          <div className="flex items-center gap-3">
             <div className="relative">
-              <button onClick={() => setShowNotifications(!showNotifications)}
-                className="p-2 rounded-lg hover:bg-gray-100 relative transition-colors">
+              <button onClick={() => setShowNotifications(!showNotifications)} className="p-2 rounded-lg hover:bg-gray-100 relative transition-colors">
                 <Bell className="w-5 h-5 text-gray-600" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-white text-xs flex items-center justify-center font-bold">
-                    {unreadCount}
-                  </span>
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-white text-xs flex items-center justify-center font-bold">{unreadCount}</span>
                 )}
               </button>
               <AnimatePresence>
@@ -262,8 +285,7 @@ export default function Dashboard() {
                         <stat.icon className="w-6 h-6 text-white" />
                       </div>
                       <span className={"flex items-center gap-1 text-sm font-medium " + (stat.up ? 'text-emerald-600' : 'text-red-500')}>
-                        {stat.up ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
-                        {stat.change}
+                        {stat.up ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}{stat.change}
                       </span>
                     </div>
                     <div className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</div>
@@ -291,9 +313,7 @@ export default function Dashboard() {
                           <td className="px-6 py-4 text-sm text-gray-900">{order.client}</td>
                           <td className="px-6 py-4 text-sm text-gray-600">{order.product}</td>
                           <td className="px-6 py-4 text-sm font-semibold text-gray-900">{order.amount}</td>
-                          <td className="px-6 py-4">
-                            <span className={"px-3 py-1 rounded-full text-xs font-semibold " + statusColors[order.status]}>{order.status}</span>
-                          </td>
+                          <td className="px-6 py-4"><span className={"px-3 py-1 rounded-full text-xs font-semibold " + statusColors[order.status]}>{order.status}</span></td>
                           <td className="px-6 py-4 text-sm text-gray-500">{formatDate(order.created_at)}</td>
                         </tr>
                       ))}
@@ -303,23 +323,24 @@ export default function Dashboard() {
               </div>
 
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-                <div className="p-6 border-b border-gray-100">
+                <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                   <h4 className="text-lg font-bold text-gray-900">Top Performing Products</h4>
+                  <button onClick={() => setActivePage("products")} className="text-emerald-600 text-sm font-medium hover:underline">View All</button>
                 </div>
                 <div className="p-6 space-y-4">
-                  {topProducts.map((product, idx) => (
-                    <div key={product.name} className="flex items-center gap-4">
+                  {products.slice(0, 5).map((product, idx) => (
+                    <div key={product.id} className="flex items-center gap-4">
                       <span className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">{idx + 1}</span>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-sm font-medium text-gray-900">{product.name}</span>
-                          <span className="text-sm font-bold text-emerald-600">{product.revenue}</span>
+                          <span className="text-sm font-bold text-emerald-600">KES {Number(product.price).toLocaleString()}</span>
                         </div>
                         <div className="w-full bg-gray-100 rounded-full h-2">
-                          <div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${(product.sales / 342) * 100}%` }} />
+                          <div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${Math.min((product.stock / 500) * 100, 100)}%` }} />
                         </div>
                       </div>
-                      <span className="text-xs text-gray-500 flex-shrink-0">{product.sales} sold</span>
+                      <span className="text-xs text-gray-500 flex-shrink-0">{product.stock} in stock</span>
                     </div>
                   ))}
                 </div>
@@ -373,16 +394,12 @@ export default function Dashboard() {
                           <td className="px-6 py-4 text-sm text-gray-900">{order.client}</td>
                           <td className="px-6 py-4 text-sm text-gray-600">{order.product}</td>
                           <td className="px-6 py-4 text-sm font-semibold text-gray-900">{order.amount}</td>
-                          <td className="px-6 py-4">
-                            <span className={"px-3 py-1 rounded-full text-xs font-semibold " + statusColors[order.status]}>{order.status}</span>
-                          </td>
+                          <td className="px-6 py-4"><span className={"px-3 py-1 rounded-full text-xs font-semibold " + statusColors[order.status]}>{order.status}</span></td>
                           <td className="px-6 py-4 text-sm text-gray-500">{formatDate(order.created_at)}</td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
-                              <button onClick={() => handleEditOrder(order)}
-                                className="p-1.5 hover:bg-blue-50 rounded-lg text-blue-600 transition-colors"><Edit className="w-4 h-4" /></button>
-                              <button onClick={() => handleDeleteOrder(order.id)}
-                                className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                              <button onClick={() => handleEditOrder(order)} className="p-1.5 hover:bg-blue-50 rounded-lg text-blue-600 transition-colors"><Edit className="w-4 h-4" /></button>
+                              <button onClick={() => handleDeleteOrder(order.id)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                             </div>
                           </td>
                         </tr>
@@ -405,9 +422,6 @@ export default function Dashboard() {
             <div>
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-2xl font-bold text-gray-900">Clients</h3>
-                <button className="bg-emerald-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-emerald-700 transition-colors">
-                  <Plus className="w-4 h-4" /> Add Client
-                </button>
               </div>
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
                 <div className="overflow-x-auto">
@@ -422,23 +436,18 @@ export default function Dashboard() {
                         <tr key={client.name} className="hover:bg-gray-50 transition-colors">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-bold text-sm">
-                                {client.name[0]}
-                              </div>
+                              <div className="w-9 h-9 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-bold text-sm">{client.name[0]}</div>
                               <span className="text-sm font-medium text-gray-900">{client.name}</span>
                             </div>
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-500">{client.email}</td>
                           <td className="px-6 py-4 text-sm text-gray-900">{client.orders}</td>
                           <td className="px-6 py-4 text-sm font-semibold text-gray-900">{client.spent}</td>
-                          <td className="px-6 py-4">
-                            <span className={"px-3 py-1 rounded-full text-xs font-semibold " + statusColors[client.status]}>{client.status}</span>
-                          </td>
+                          <td className="px-6 py-4"><span className={"px-3 py-1 rounded-full text-xs font-semibold " + statusColors[client.status]}>{client.status}</span></td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
                               <button className="p-1.5 hover:bg-blue-50 rounded-lg text-blue-600 transition-colors"><Edit className="w-4 h-4" /></button>
-                              <button onClick={() => setClients(clients.filter(c => c.name !== client.name))}
-                                className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                              <button onClick={() => setClients(clients.filter(c => c.name !== client.name))} className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                             </div>
                           </td>
                         </tr>
@@ -454,8 +463,12 @@ export default function Dashboard() {
           {activePage === "products" && (
             <div>
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">Products</h3>
-                <button className="bg-emerald-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-emerald-700 transition-colors">
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900">Products</h3>
+                  <p className="text-gray-500 text-sm">{products.length} products in catalogue</p>
+                </div>
+                <button onClick={() => setShowProductModal(true)}
+                  className="bg-emerald-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-emerald-700 transition-colors">
                   <Plus className="w-4 h-4" /> Add Product
                 </button>
               </div>
@@ -463,16 +476,26 @@ export default function Dashboard() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-gray-50">
-                      <tr>{["Product", "Sales", "Revenue", "Stock", "Actions"].map(h => (
+                      <tr>{["Product", "Category", "Price", "Stock", "Actions"].map(h => (
                         <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{h}</th>
                       ))}</tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {topProducts.map(product => (
-                        <tr key={product.name} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4 text-sm font-medium text-gray-900">{product.name}</td>
-                          <td className="px-6 py-4 text-sm text-gray-500">{product.sales} units</td>
-                          <td className="px-6 py-4 text-sm font-semibold text-emerald-600">{product.revenue}</td>
+                      {products.map(product => (
+                        <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              {product.image && (
+                                <img src={product.image} alt={product.name} className="w-10 h-10 rounded-lg object-cover"
+                                  onError={e => e.target.style.display = 'none'} />
+                              )}
+                              <span className="text-sm font-medium text-gray-900">{product.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="bg-emerald-50 text-emerald-700 text-xs font-semibold px-2 py-1 rounded-full">{product.category}</span>
+                          </td>
+                          <td className="px-6 py-4 text-sm font-semibold text-emerald-600">KES {Number(product.price).toLocaleString()}</td>
                           <td className="px-6 py-4">
                             <span className={"text-sm font-medium " + (product.stock < 20 ? 'text-red-600' : 'text-gray-900')}>
                               {product.stock} units {product.stock < 20 && "⚠️"}
@@ -481,13 +504,19 @@ export default function Dashboard() {
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
                               <button className="p-1.5 hover:bg-blue-50 rounded-lg text-blue-600 transition-colors"><Edit className="w-4 h-4" /></button>
-                              <button className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                              <button onClick={() => handleDeleteProduct(product.id)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                             </div>
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
+                  {products.length === 0 && (
+                    <div className="text-center py-12 text-gray-400">
+                      <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                      <p>No products yet. Add your first product!</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -539,9 +568,7 @@ export default function Dashboard() {
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                   </div>
                 ))}
-                <button className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-colors">
-                  Save Changes
-                </button>
+                <button className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-colors">Save Changes</button>
               </div>
             </div>
           )}
@@ -557,9 +584,7 @@ export default function Dashboard() {
               className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-900">New Order</h3>
-                <button onClick={() => setShowNewOrderModal(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                  <X className="w-5 h-5" />
-                </button>
+                <button onClick={() => setShowNewOrderModal(false)} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button>
               </div>
               <div className="space-y-4">
                 <div>
@@ -586,22 +611,13 @@ export default function Dashboard() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                   <select value={newOrder.status} onChange={e => setNewOrder({ ...newOrder, status: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                    <option>Pending</option>
-                    <option>Processing</option>
-                    <option>Delivered</option>
-                    <option>Cancelled</option>
+                    <option>Pending</option><option>Processing</option><option>Delivered</option><option>Cancelled</option>
                   </select>
                 </div>
               </div>
               <div className="flex gap-3 mt-6">
-                <button onClick={() => setShowNewOrderModal(false)}
-                  className="flex-1 px-4 py-3 border border-gray-200 rounded-xl font-medium hover:bg-gray-50 transition-colors">
-                  Cancel
-                </button>
-                <button onClick={handleAddOrder}
-                  className="flex-1 bg-emerald-600 text-white px-4 py-3 rounded-xl font-medium hover:bg-emerald-700 transition-colors">
-                  Add Order
-                </button>
+                <button onClick={() => setShowNewOrderModal(false)} className="flex-1 px-4 py-3 border border-gray-200 rounded-xl font-medium hover:bg-gray-50">Cancel</button>
+                <button onClick={handleAddOrder} className="flex-1 bg-emerald-600 text-white px-4 py-3 rounded-xl font-medium hover:bg-emerald-700">Add Order</button>
               </div>
             </motion.div>
           </div>
@@ -616,15 +632,12 @@ export default function Dashboard() {
               className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-900">Edit Order {editingOrder.order_number}</h3>
-                <button onClick={() => setShowEditModal(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                  <X className="w-5 h-5" />
-                </button>
+                <button onClick={() => setShowEditModal(false)} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button>
               </div>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Client Name</label>
-                  <input type="text" value={editingOrder.client}
-                    onChange={e => setEditingOrder({ ...editingOrder, client: e.target.value })}
+                  <input type="text" value={editingOrder.client} onChange={e => setEditingOrder({ ...editingOrder, client: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                 </div>
                 <div>
@@ -636,29 +649,86 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-                  <input type="text" value={editingOrder.amount}
-                    onChange={e => setEditingOrder({ ...editingOrder, amount: e.target.value })}
+                  <input type="text" value={editingOrder.amount} onChange={e => setEditingOrder({ ...editingOrder, amount: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                   <select value={editingOrder.status} onChange={e => setEditingOrder({ ...editingOrder, status: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                    <option>Pending</option>
-                    <option>Processing</option>
-                    <option>Delivered</option>
-                    <option>Cancelled</option>
+                    <option>Pending</option><option>Processing</option><option>Delivered</option><option>Cancelled</option>
                   </select>
                 </div>
               </div>
               <div className="flex gap-3 mt-6">
-                <button onClick={() => setShowEditModal(false)}
-                  className="flex-1 px-4 py-3 border border-gray-200 rounded-xl font-medium hover:bg-gray-50 transition-colors">
-                  Cancel
-                </button>
-                <button onClick={handleSaveEdit}
-                  className="flex-1 bg-emerald-600 text-white px-4 py-3 rounded-xl font-medium hover:bg-emerald-700 transition-colors">
-                  Save Changes
+                <button onClick={() => setShowEditModal(false)} className="flex-1 px-4 py-3 border border-gray-200 rounded-xl font-medium hover:bg-gray-50">Cancel</button>
+                <button onClick={handleSaveEdit} className="flex-1 bg-emerald-600 text-white px-4 py-3 rounded-xl font-medium hover:bg-emerald-700">Save Changes</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ADD PRODUCT MODAL */}
+      <AnimatePresence>
+        {showProductModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-900">Add New Product</h3>
+                <button onClick={() => setShowProductModal(false)} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
+                  <input type="text" placeholder="e.g. Mavuno Fertilizer" value={newProduct.name}
+                    onChange={e => setNewProduct({ ...newProduct, name: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                    <select value={newProduct.category} onChange={e => setNewProduct({ ...newProduct, category: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                      {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (KES) *</label>
+                    <input type="number" placeholder="e.g. 2500" value={newProduct.price}
+                      onChange={e => setNewProduct({ ...newProduct, price: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Stock (units) *</label>
+                  <input type="number" placeholder="e.g. 100" value={newProduct.stock}
+                    onChange={e => setNewProduct({ ...newProduct, stock: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea placeholder="Brief product description..." value={newProduct.description}
+                    onChange={e => setNewProduct({ ...newProduct, description: e.target.value })} rows={3}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                  <input type="text" placeholder="https://..." value={newProduct.image}
+                    onChange={e => setNewProduct({ ...newProduct, image: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                  {newProduct.image && (
+                    <img src={newProduct.image} alt="Preview" className="mt-2 w-full h-32 object-cover rounded-xl"
+                      onError={e => e.target.style.display = 'none'} />
+                  )}
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button onClick={() => setShowProductModal(false)} className="flex-1 px-4 py-3 border border-gray-200 rounded-xl font-medium hover:bg-gray-50">Cancel</button>
+                <button onClick={handleAddProduct} disabled={productLoading}
+                  className="flex-1 bg-emerald-600 text-white px-4 py-3 rounded-xl font-medium hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                  {productLoading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Plus className="w-4 h-4" /> Add Product</>}
                 </button>
               </div>
             </motion.div>

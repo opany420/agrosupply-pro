@@ -3,11 +3,13 @@ import { motion } from "framer-motion";
 import { useCart } from "../CartContext";
 import { Link } from "react-router-dom";
 import { ShoppingBag, CheckCircle, Truck, CreditCard, User, MapPin, Phone, Mail, ArrowLeft, ArrowRight, MessageCircle } from "lucide-react";
+import { supabase } from "../supabase";
 
 export default function Checkout() {
   const { cart, totalPrice, clearCart } = useCart();
   const [step, setStep] = useState(1);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "", lastName: "", email: "", phone: "",
     address: "", city: "", county: "",
@@ -16,8 +18,22 @@ export default function Checkout() {
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handlePlaceOrder = (e) => {
+  const handlePlaceOrder = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
+    // Save each cart item as an order in Supabase
+    for (const item of cart) {
+      const order_number = `ORD-${Date.now()}-${item.id}`;
+      await supabase.from('orders').insert([{
+        order_number,
+        client: `${formData.firstName} ${formData.lastName}`,
+        product: item.name,
+        amount: `KES ${(item.price * item.quantity).toLocaleString()}`,
+        status: 'Pending',
+        phone: formData.phone,
+      }]);
+    }
 
     // Build WhatsApp message
     const orderLines = cart.map(item =>
@@ -35,10 +51,9 @@ export default function Checkout() {
       `*Total: KES ${totalPrice.toLocaleString()}*%0A` +
       `Payment: ${formData.paymentMethod === "equity" ? "Equity Paybill" : "Cash on Delivery"}`;
 
-    // Open WhatsApp with order details (replace with client's number)
     window.open(`https://wa.me/254757790379?text=${message}`, "_blank");
 
-
+    setLoading(false);
     setOrderPlaced(true);
     clearCart();
   };
@@ -63,9 +78,7 @@ export default function Checkout() {
   if (orderPlaced) {
     return (
       <div className="min-h-screen pt-32 flex items-center justify-center bg-gray-50">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
           className="bg-white rounded-2xl p-12 shadow-lg text-center max-w-md mx-4">
           <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-emerald-600" />
@@ -93,7 +106,7 @@ export default function Checkout() {
           {formData.paymentMethod === "cod" && (
             <div className="bg-amber-50 rounded-xl p-4 mb-6 border border-amber-100">
               <p className="font-semibold text-amber-900 mb-1">💵 Cash on Delivery</p>
-              <p className="text-amber-700 text-sm">Have exact cash ready when our rider arrives. Delivery within Nairobi 1–3 business days.</p>
+              <p className="text-amber-700 text-sm">Have exact cash ready when our rider arrives. Delivery within Kenya 1–3 business days.</p>
             </div>
           )}
 
@@ -118,11 +131,9 @@ export default function Checkout() {
     <div className="min-h-screen bg-gray-50 pt-24 pb-12">
       <div className="max-w-6xl mx-auto px-6">
 
-        {/* Header */}
         <div className="mb-8">
           <Link to="/products" className="flex items-center gap-2 text-emerald-600 hover:underline mb-4">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Products
+            <ArrowLeft className="w-4 h-4" /> Back to Products
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
         </div>
@@ -138,12 +149,8 @@ export default function Checkout() {
               <div className="flex items-center gap-3">
                 <div className={"w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all " + (
                   step >= s.num ? "bg-emerald-600 text-white" : "bg-gray-200 text-gray-500"
-                )}>
-                  {s.num}
-                </div>
-                <span className={"font-medium text-sm hidden md:block " + (step >= s.num ? "text-emerald-600" : "text-gray-400")}>
-                  {s.label}
-                </span>
+                )}>{s.num}</div>
+                <span className={"font-medium text-sm hidden md:block " + (step >= s.num ? "text-emerald-600" : "text-gray-400")}>{s.label}</span>
               </div>
               {idx < 2 && <div className={"flex-1 h-1 rounded " + (step > s.num ? "bg-emerald-600" : "bg-gray-200")} />}
             </React.Fragment>
@@ -151,13 +158,12 @@ export default function Checkout() {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-
-          {/* Form */}
           <div className="lg:col-span-2">
 
-            {/* Step 1 - Delivery Info */}
+            {/* Step 1 */}
             {step === 1 && (
-              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+                className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
                     <User className="w-5 h-5 text-emerald-600" />
@@ -169,14 +175,12 @@ export default function Checkout() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
                       <input name="firstName" required value={formData.firstName} onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        placeholder="John" />
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="John" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
                       <input name="lastName" required value={formData.lastName} onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        placeholder="Kamau" />
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Kamau" />
                     </div>
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
@@ -185,8 +189,7 @@ export default function Checkout() {
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input name="email" type="email" required value={formData.email} onChange={handleChange}
-                          className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                          placeholder="john@email.com" />
+                          className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="john@email.com" />
                       </div>
                     </div>
                     <div>
@@ -194,8 +197,7 @@ export default function Checkout() {
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input name="phone" type="tel" required value={formData.phone} onChange={handleChange}
-                          className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                          placeholder="0712 345 678" />
+                          className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="0712 345 678" />
                       </div>
                     </div>
                   </div>
@@ -204,39 +206,33 @@ export default function Checkout() {
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input name="address" required value={formData.address} onChange={handleChange}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        placeholder="e.g. Kenyatta Avenue, Westlands" />
+                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="e.g. Kenyatta Avenue, Westlands" />
                     </div>
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Town / City</label>
                       <input name="city" required value={formData.city} onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        placeholder="Nairobi" />
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Kisumu" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">County</label>
                       <input name="county" required value={formData.county} onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        placeholder="Nairobi County" />
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Kisumu County" />
                     </div>
                   </div>
-                  <button
-                    onClick={() => {
-                      if (formData.firstName && formData.email && formData.phone && formData.address) setStep(2);
-                    }}
+                  <button onClick={() => { if (formData.firstName && formData.email && formData.phone && formData.address) setStep(2); }}
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors mt-4">
-                    Continue to Payment
-                    <ArrowRight className="w-5 h-5" />
+                    Continue to Payment <ArrowRight className="w-5 h-5" />
                   </button>
                 </div>
               </motion.div>
             )}
 
-            {/* Step 2 - Payment */}
+            {/* Step 2 */}
             {step === 2 && (
-              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+                className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
                     <CreditCard className="w-5 h-5 text-emerald-600" />
@@ -249,8 +245,7 @@ export default function Checkout() {
                       { value: "equity", label: "🏦 Equity Paybill" },
                       { value: "cod", label: "💵 Cash on Delivery" },
                     ].map(method => (
-                      <button key={method.value}
-                        onClick={() => setFormData({ ...formData, paymentMethod: method.value })}
+                      <button key={method.value} onClick={() => setFormData({ ...formData, paymentMethod: method.value })}
                         className={"py-4 px-4 rounded-xl border-2 font-medium text-sm transition-all " + (
                           formData.paymentMethod === method.value
                             ? "border-emerald-600 bg-emerald-50 text-emerald-700"
@@ -264,27 +259,19 @@ export default function Checkout() {
                   {formData.paymentMethod === "equity" && (
                     <div className="bg-blue-50 rounded-xl p-5 border border-blue-100">
                       <p className="font-bold text-blue-900 mb-3">💳 Equity Bank Paybill Details</p>
-                      <div className="space-y-2 text-sm text-blue-800">
-                        <div className="flex justify-between bg-white rounded-lg px-3 py-2">
-                          <span className="text-gray-500">Paybill Number</span>
-                          <span className="font-bold">247247</span>
-                        </div>
-                        <div className="flex justify-between bg-white rounded-lg px-3 py-2">
-                          <span className="text-gray-500">Account Number</span>
-                          <span className="font-bold">0790026955</span>
-                        </div>
-                        <div className="flex justify-between bg-white rounded-lg px-3 py-2">
-                          <span className="text-gray-500">Account Name</span>
-                          <span className="font-bold">Chicago Agro Supplies Limited</span>
-                        </div>
-                        <div className="flex justify-between bg-white rounded-lg px-3 py-2">
-                          <span className="text-gray-500">Branch</span>
-                          <span className="font-bold">Kakamega</span>
-                        </div>
-                        <div className="flex justify-between bg-white rounded-lg px-3 py-2">
-                          <span className="text-gray-500">Amount</span>
-                          <span className="font-bold text-emerald-600">KES {totalPrice.toLocaleString()}</span>
-                        </div>
+                      <div className="space-y-2 text-sm">
+                        {[
+                          ["Paybill Number", "247247"],
+                          ["Account Number", "0790026955"],
+                          ["Account Name", "Chicago Agro Supplies Limited"],
+                          ["Branch", "Kakamega"],
+                          ["Amount", `KES ${totalPrice.toLocaleString()}`],
+                        ].map(([label, value]) => (
+                          <div key={label} className="flex justify-between bg-white rounded-lg px-3 py-2">
+                            <span className="text-gray-500">{label}</span>
+                            <span className="font-bold text-gray-900">{value}</span>
+                          </div>
+                        ))}
                       </div>
                       <p className="text-blue-600 text-xs mt-3">📌 After payment, send screenshot to our WhatsApp for quick confirmation</p>
                     </div>
@@ -293,7 +280,7 @@ export default function Checkout() {
                   {formData.paymentMethod === "cod" && (
                     <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
                       <p className="font-semibold text-amber-900 mb-1">💵 Cash on Delivery</p>
-                      <p className="text-amber-700 text-sm">Have exact cash ready when our rider arrives. Available within Nairobi. Delivery in 1–3 business days.</p>
+                      <p className="text-amber-700 text-sm">Have exact cash ready when our rider arrives. Delivery in 1–3 business days.</p>
                     </div>
                   )}
 
@@ -311,16 +298,16 @@ export default function Checkout() {
               </motion.div>
             )}
 
-            {/* Step 3 - Review */}
+            {/* Step 3 */}
             {step === 3 && (
-              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+                className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
                     <CheckCircle className="w-5 h-5 text-emerald-600" />
                   </div>
                   <h2 className="text-xl font-bold text-gray-900">Review Your Order</h2>
                 </div>
-
                 <div className="space-y-4 mb-6">
                   <div className="bg-gray-50 rounded-xl p-4">
                     <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
@@ -331,7 +318,6 @@ export default function Checkout() {
                     <p className="text-gray-600 text-sm">{formData.phone}</p>
                     <p className="text-gray-600 text-sm">{formData.address}, {formData.city}, {formData.county}</p>
                   </div>
-
                   <div className="bg-gray-50 rounded-xl p-4">
                     <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                       <CreditCard className="w-4 h-4 text-emerald-600" /> Payment Method
@@ -340,18 +326,17 @@ export default function Checkout() {
                       {formData.paymentMethod === "equity" ? "🏦 Equity Paybill (247247 → Acc: 0790026955)" : "💵 Cash on Delivery"}
                     </p>
                   </div>
-
                   <div className="bg-gray-50 rounded-xl p-4">
                     <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                       <Truck className="w-4 h-4 text-emerald-600" /> Delivery
                     </h3>
-                    <p className="text-gray-600 text-sm">Free Delivery — 1–3 Business Days within Nairobi</p>
+                    <p className="text-gray-600 text-sm">Free Delivery — 1–3 Business Days across Kenya</p>
                   </div>
                 </div>
 
                 <div className="bg-emerald-50 rounded-xl p-4 mb-6 border border-emerald-100 flex items-start gap-3">
                   <MessageCircle className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-emerald-700 text-sm">Clicking <strong>Place Order</strong> will open WhatsApp so your order goes directly to our team for quick processing!</p>
+                  <p className="text-emerald-700 text-sm">Clicking <strong>Place Order</strong> will open WhatsApp and save your order to our system!</p>
                 </div>
 
                 <div className="flex gap-4">
@@ -359,9 +344,9 @@ export default function Checkout() {
                     className="flex-1 border border-gray-200 text-gray-700 py-4 rounded-xl font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
                     <ArrowLeft className="w-5 h-5" /> Back
                   </button>
-                  <button onClick={handlePlaceOrder}
-                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors">
-                    Place Order <CheckCircle className="w-5 h-5" />
+                  <button onClick={handlePlaceOrder} disabled={loading}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50">
+                    {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <>Place Order <CheckCircle className="w-5 h-5" /></>}
                   </button>
                 </div>
               </motion.div>
@@ -372,8 +357,7 @@ export default function Checkout() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 sticky top-24">
               <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <ShoppingBag className="w-5 h-5 text-emerald-600" />
-                Order Summary
+                <ShoppingBag className="w-5 h-5 text-emerald-600" /> Order Summary
               </h2>
               <div className="space-y-4 mb-6">
                 {cart.map(item => (

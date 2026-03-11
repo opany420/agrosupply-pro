@@ -1,34 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from "framer-motion";
 import { useParams, Link } from 'react-router-dom';
 import { ShoppingCart, Star, CheckCircle, ArrowLeft, Truck, Shield, Award } from "lucide-react";
 import { useCart } from '../CartContext';
-
-const products = [
-  { id: 1, name: "Hybrid Maize Seeds", category: "seeds", price: 5900, unit: "kg", description: "High-yield hybrid maize seeds specially developed for East African climate conditions. These seeds offer exceptional germination rates and disease resistance.", badge: "Best Seller", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/2015-Corn.jpg/640px-2015-Corn.jpg", rating: 4.8, reviews: 124, stock: 50, features: ["98% germination rate", "Drought resistant", "Matures in 90 days", "High yield potential"] },
-  { id: 2, name: "NPK Fertilizer 20-20-20", category: "fertilizers", price: 4200, unit: "bag", description: "Balanced NPK fertilizer providing equal parts nitrogen, phosphorus, and potassium for all-round crop nutrition and healthy growth.", badge: "Popular", image: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&q=80", rating: 4.6, reviews: 89, stock: 120, features: ["Balanced NPK ratio", "Suitable for all crops", "Fast acting formula", "50kg bag"] },
-  { id: 3, name: "Organic Pesticide Spray", category: "pesticides", price: 2450, unit: "litre", description: "Eco-friendly organic pesticide that effectively controls pests without harming beneficial insects or the environment.", badge: null, image: "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=400&q=80", rating: 4.3, reviews: 56, stock: 80, features: ["100% organic", "Safe for bees", "No harmful residues", "Broad spectrum"] },
-  { id: 4, name: "Mini Hand Tractor", category: "equipment", price: 167500, unit: "unit", description: "Compact and powerful mini tractor perfect for small to medium farms. Easy to operate and maintain with low fuel consumption.", badge: "New", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Farmall_M_tractor.jpg/640px-Farmall_M_tractor.jpg", rating: 4.9, reviews: 34, stock: 8, features: ["7HP diesel engine", "Low fuel consumption", "Easy maintenance", "Multiple attachments"] },
-  { id: 5, name: "Irrigation Drip Kit", category: "irrigation", price: 11600, unit: "set", description: "Complete drip irrigation system covering 1 acre. Saves up to 60% water compared to flood irrigation.", badge: null, image: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&q=80", rating: 4.7, reviews: 67, stock: 25, features: ["Covers 1 acre", "60% water saving", "Easy installation", "UV resistant pipes"] },
-  { id: 6, name: "Cattle Feed Premium", category: "animal_feed", price: 7100, unit: "bag", description: "Nutritionally complete feed for dairy and beef cattle. Formulated to maximize milk production and healthy weight gain.", badge: null, image: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=400&q=80", rating: 4.5, reviews: 78, stock: 60, features: ["High protein content", "Boosts milk production", "Vitamins & minerals", "50kg bag"] },
-  { id: 7, name: "Garden Tool Set", category: "tools", price: 3200, unit: "set", description: "Complete set of 8 essential gardening tools including hoe, rake, spade, fork, and more. All with ergonomic handles.", badge: null, image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&q=80", rating: 4.4, reviews: 92, stock: 40, features: ["8 tools included", "Ergonomic handles", "Rust resistant", "Carrying bag included"] },
-  { id: 8, name: "Sunflower Seeds", category: "seeds", price: 3600, unit: "kg", description: "Premium sunflower seeds for oil production and direct consumption. High oil content varieties.", badge: null, image: "https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=400&q=80", rating: 4.6, reviews: 45, stock: 35, features: ["High oil content", "Disease resistant", "Drought tolerant", "90-day maturity"] },
-  { id: 9, name: "Urea Fertilizer", category: "fertilizers", price: 2840, unit: "bag", description: "High nitrogen urea fertilizer ideal for leafy crops and boosting vegetative growth.", badge: null, image: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400&q=80", rating: 4.5, reviews: 103, stock: 200, features: ["46% nitrogen content", "Fast release", "All crops suitable", "50kg bag"] },
-  { id: 10, name: "Sprayer Backpack", category: "tools", price: 5800, unit: "unit", description: "20-litre manual backpack sprayer with adjustable nozzle and comfortable padded straps.", badge: null, image: "https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?w=400&q=80", rating: 4.3, reviews: 61, stock: 30, features: ["20-litre tank", "Adjustable nozzle", "Padded straps", "Anti-leak valve"] },
-  { id: 11, name: "Poultry Feed Starter", category: "animal_feed", price: 4900, unit: "bag", description: "Specially formulated starter feed for day-old chicks. Promotes healthy growth and strong immunity.", badge: "Popular", image: "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=400&q=80", rating: 4.7, reviews: 88, stock: 75, features: ["High protein 22%", "Immune boosters", "Easy to digest", "25kg bag"] },
-  { id: 12, name: "Water Pump 2HP", category: "irrigation", price: 23200, unit: "unit", description: "Powerful 2HP electric water pump for irrigation systems. High flow rate and energy efficient motor.", badge: null, image: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=400&q=80", rating: 4.8, reviews: 42, stock: 15, features: ["2HP motor", "High flow rate", "Energy efficient", "1 year warranty"] },
-];
+import { supabase } from '../supabase';
 
 export default function ProductDetail() {
   const { id } = useParams();
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const [product, setProduct] = useState(null);
+  const [related, setRelated] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const product = products.find(p => p.id === parseInt(id));
-  const related = products.filter(p => p.category === product?.category && p.id !== product?.id).slice(0, 3);
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    setQuantity(1);
+    supabase
+      .from('products')
+      .select('*')
+      .eq('id', id)
+      .single()
+      .then(({ data, error: fetchError }) => {
+        if (fetchError || !data) {
+          setError('Product not found');
+          setLoading(false);
+          return;
+        }
+        setProduct(data);
+        // Fetch related products in same category
+        supabase
+          .from('products')
+          .select('*')
+          .eq('category', data.category)
+          .neq('id', data.id)
+          .limit(3)
+          .then(({ data: relatedData }) => {
+            setRelated(relatedData || []);
+            setLoading(false);
+          });
+      });
+  }, [id]);
 
-  if (!product) {
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-32 flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">Loading product...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
     return (
       <div className="min-h-screen pt-32 flex items-center justify-center">
         <div className="text-center">
@@ -100,7 +128,7 @@ export default function ProductDetail() {
             <div className="mb-6">
               <h3 className="font-bold text-gray-900 mb-3">Key Features:</h3>
               <div className="grid grid-cols-2 gap-2">
-                {product.features.map((f, i) => (
+                {(product.features || []).map((f, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                     <span className="text-gray-600 text-sm">{f}</span>

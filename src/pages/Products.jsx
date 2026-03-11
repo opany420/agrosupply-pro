@@ -21,6 +21,7 @@ export default function Products() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { addToCart } = useCart();
 
   useEffect(() => {
@@ -29,11 +30,16 @@ export default function Products() {
 
   const fetchProducts = async () => {
     setLoading(true);
-    const { data } = await supabase
+    setError(null);
+    const { data, error: fetchError } = await supabase
       .from('products')
       .select('*')
       .order('created_at', { ascending: true });
-    if (data) setProducts(data);
+    if (fetchError) {
+      setError('Failed to load products. Please try again.');
+    } else {
+      setProducts(data || []);
+    }
     setLoading(false);
   };
 
@@ -82,6 +88,13 @@ export default function Products() {
         {loading ? (
           <div className="flex items-center justify-center py-24">
             <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <p className="text-red-600 font-medium mb-4">{error}</p>
+            <button onClick={fetchProducts} className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-colors">
+              Retry
+            </button>
           </div>
         ) : (
           <>

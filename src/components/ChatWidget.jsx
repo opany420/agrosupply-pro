@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { X, Send, MessageCircle } from "lucide-react";
 
 const botResponses = {
-  default: "Thank you for your message! Our team will get back to you shortly. You can also reach us on WhatsApp at +254 712 345 678.",
+  default: "Thank you for your message! Our team will get back to you shortly. You can also reach us on WhatsApp at +254 757 790 379.",
   hello: "Hello! Welcome to Chicago Agro Supplies. How can I help you today? I can assist with product information, orders, delivery questions, and more.",
   hi: "Hi there! Welcome to Chicago Agro Supplies. How can I assist you today?",
   product: "We offer a wide range of agricultural products including seeds, fertilizers, pesticides, irrigation equipment, tools, and animal feed. Visit our Products page to browse our full catalogue!",
@@ -13,7 +13,7 @@ const botResponses = {
   order: "You can place an order directly on our website by adding products to your cart and proceeding to checkout. We accept M-Pesa, bank transfer, and cash on delivery!",
   payment: "We accept M-Pesa, bank transfer (Equity Bank), and cash on delivery for local orders. All transactions are secure!",
   mpesa: "To pay via M-Pesa, select M-Pesa at checkout and enter your phone number. You will receive a prompt to complete the payment.",
-  contact: "You can reach us at: Phone: +254 712 345 678, Email: info@chicagoagro.com, or chat with us on WhatsApp!",
+  contact: "You can reach us at: Phone: +254 757 790 379, Email: info@chicagoagro.co.ke, or chat with us on WhatsApp!",
   return: "We have a 30-day return policy for unopened products. For defective items, we offer full replacement. Contact us to initiate a return.",
   discount: "Yes! We offer bulk discounts. Orders above KES 65,000 get 10% off, above KES 129,000 get 15% off, and above KES 645,000 get 20% off!",
   hours: "We are open Monday to Saturday, 8am to 6pm. You can always place orders online 24/7!",

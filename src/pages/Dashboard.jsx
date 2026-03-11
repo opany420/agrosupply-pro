@@ -113,7 +113,10 @@ export default function Dashboard() {
   // Orders CRUD
   const handleAddOrder = async () => {
     if (!newOrder.client || !newOrder.product || !newOrder.amount) return;
-    const order_number = `ORD-${String(orders.length + 1).padStart(3, "0")}`;
+    // Get the highest existing order number to avoid duplicates
+    const { data: latest } = await supabase.from('orders').select('order_number').order('created_at', { ascending: false }).limit(1).single();
+    const lastNum = latest?.order_number ? parseInt(latest.order_number.replace('ORD-', ''), 10) || 0 : 0;
+    const order_number = `ORD-${String(lastNum + 1).padStart(3, "0")}`;
     const amount = newOrder.amount.startsWith("KES") ? newOrder.amount : `KES ${Number(newOrder.amount).toLocaleString()}`;
     const { data } = await supabase.from('orders').insert([{ order_number, client: newOrder.client, product: newOrder.product, amount, status: newOrder.status }]).select().single();
     if (data) {

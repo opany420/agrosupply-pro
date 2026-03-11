@@ -10,16 +10,43 @@ export default function Checkout() {
   const [step, setStep] = useState(1);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     firstName: "", lastName: "", email: "", phone: "",
     address: "", city: "", county: "",
     paymentMethod: "equity",
   });
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    // Clear field error on change
+    if (errors[e.target.name]) setErrors(prev => ({ ...prev, [e.target.name]: null }));
+  };
+
+  const validateStep1 = () => {
+    const newErrors = {};
+    if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
+    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Enter a valid email address";
+    }
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Phone number is required";
+    } else if (!/^(\+?254|0)\d{9}$/.test(formData.phone.replace(/[\s-]/g, ''))) {
+      newErrors.phone = "Enter a valid Kenyan phone (e.g. 0712345678 or +254712345678)";
+    }
+    if (!formData.address.trim()) newErrors.address = "Delivery address is required";
+    if (!formData.city.trim()) newErrors.city = "City is required";
+    if (!formData.county.trim()) newErrors.county = "County is required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
+    if (!validateStep1()) { setStep(1); return; }
     setLoading(true);
 
     // Save each cart item as an order in Supabase
@@ -175,12 +202,14 @@ export default function Checkout() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
                       <input name="firstName" required value={formData.firstName} onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="John" />
+                        className={"w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 " + (errors.firstName ? "border-red-400" : "border-gray-200")} placeholder="John" />
+                      {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
                       <input name="lastName" required value={formData.lastName} onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Kamau" />
+                        className={"w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 " + (errors.lastName ? "border-red-400" : "border-gray-200")} placeholder="Kamau" />
+                      {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
                     </div>
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
@@ -189,16 +218,18 @@ export default function Checkout() {
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input name="email" type="email" required value={formData.email} onChange={handleChange}
-                          className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="john@email.com" />
+                          className={"w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 " + (errors.email ? "border-red-400" : "border-gray-200")} placeholder="john@email.com" />
                       </div>
+                      {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Phone (WhatsApp)</label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input name="phone" type="tel" required value={formData.phone} onChange={handleChange}
-                          className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="0712 345 678" />
+                          className={"w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 " + (errors.phone ? "border-red-400" : "border-gray-200")} placeholder="0712 345 678" />
                       </div>
+                      {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                     </div>
                   </div>
                   <div>
@@ -206,22 +237,25 @@ export default function Checkout() {
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input name="address" required value={formData.address} onChange={handleChange}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="e.g. Kenyatta Avenue, Westlands" />
+                        className={"w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 " + (errors.address ? "border-red-400" : "border-gray-200")} placeholder="e.g. Kenyatta Avenue, Westlands" />
                     </div>
+                    {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Town / City</label>
                       <input name="city" required value={formData.city} onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Kisumu" />
+                        className={"w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 " + (errors.city ? "border-red-400" : "border-gray-200")} placeholder="Kisumu" />
+                      {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">County</label>
                       <input name="county" required value={formData.county} onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Kisumu County" />
+                        className={"w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 " + (errors.county ? "border-red-400" : "border-gray-200")} placeholder="Kisumu County" />
+                      {errors.county && <p className="text-red-500 text-xs mt-1">{errors.county}</p>}
                     </div>
                   </div>
-                  <button onClick={() => { if (formData.firstName && formData.email && formData.phone && formData.address) setStep(2); }}
+                  <button onClick={() => { if (validateStep1()) setStep(2); }}
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors mt-4">
                     Continue to Payment <ArrowRight className="w-5 h-5" />
                   </button>

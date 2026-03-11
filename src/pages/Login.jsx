@@ -10,6 +10,8 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [resetSent, setResetSent] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -24,6 +26,24 @@ export default function Login() {
       setLoading(false);
     } else {
       navigate('/dashboard');
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Please enter your email address first.');
+      return;
+    }
+    setResetLoading(true);
+    setError('');
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/login',
+    });
+    setResetLoading(false);
+    if (resetError) {
+      setError(resetError.message);
+    } else {
+      setResetSent(true);
     }
   };
 
@@ -52,6 +72,12 @@ export default function Login() {
           </div>
         )}
 
+        {resetSent && (
+          <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl mb-6 text-sm">
+            Password reset link sent! Check your email inbox.
+          </div>
+        )}
+
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -71,6 +97,12 @@ export default function Login() {
               <button type="button" onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+            <div className="flex justify-end mt-1">
+              <button type="button" onClick={handleForgotPassword} disabled={resetLoading}
+                className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline disabled:opacity-50">
+                {resetLoading ? 'Sending...' : 'Forgot password?'}
               </button>
             </div>
           </div>

@@ -39,7 +39,7 @@ export default function Home() {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1920&q=80"
+            src="https://static.vecteezy.com/system/resources/thumbnails/074/517/458/small/bright-sun-rays-illuminate-rows-of-green-plants-in-a-cultivated-field-at-sunrise-with-mountains-in-the-background-photo.jpg"
             alt="Lush green farmland at sunrise in Kenya"
             className="w-full h-full object-cover"
           />

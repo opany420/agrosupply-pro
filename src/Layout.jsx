@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Leaf, Home, Package, Info, Phone, LayoutDashboard, LogIn, ShoppingCart } from "lucide-react";
+import { Menu, X, Leaf, Home, Package, Info, Phone, LayoutDashboard, LogIn, LogOut, ShoppingCart } from "lucide-react";
 import { useCart } from './CartContext';
+import { useAuth } from './AuthContext';
 import Cart from './components/Cart';
+import { COMPANY, PAYMENT, WHATSAPP } from './constants';
 
 export default function Layout({ children }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { totalItems, setIsCartOpen } = useCart();
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -30,7 +33,7 @@ export default function Layout({ children }) {
       <Cart />
 
       {/* WhatsApp Floating Button */}
-      <a href="https://wa.me/254757790379?text=Hello! I am interested in your agricultural products."
+      <a href={`${WHATSAPP.baseUrl}?text=${encodeURIComponent(WHATSAPP.defaultMessage)}`}
         target="_blank" rel="noreferrer"
         aria-label="Chat with us on WhatsApp"
         className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 group">
@@ -80,11 +83,18 @@ export default function Layout({ children }) {
                     <LayoutDashboard className="w-4 h-4" /> Dashboard
                   </button>
                 </Link>
-                <Link to="/login">
-                  <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
-                    <LogIn className="w-4 h-4" /> Sign In
+                {user ? (
+                  <button onClick={signOut}
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
+                    <LogOut className="w-4 h-4" /> Sign Out
                   </button>
-                </Link>
+                ) : (
+                  <Link to="/login">
+                    <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
+                      <LogIn className="w-4 h-4" /> Sign In
+                    </button>
+                  </Link>
+                )}
               </div>
             </nav>
 
@@ -126,11 +136,19 @@ export default function Layout({ children }) {
                 <LayoutDashboard className="w-5 h-5 text-gray-500" />
                 <span className="font-medium">Dashboard</span>
               </Link>
-              <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg bg-emerald-600 text-white">
-                <LogIn className="w-5 h-5" />
-                <span className="font-medium">Sign In</span>
-              </Link>
+              {user ? (
+                <button onClick={() => { signOut(); setIsMobileMenuOpen(false); }}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg bg-red-500 text-white w-full">
+                  <LogOut className="w-5 h-5" />
+                  <span className="font-medium">Sign Out</span>
+                </button>
+              ) : (
+                <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg bg-emerald-600 text-white">
+                  <LogIn className="w-5 h-5" />
+                  <span className="font-medium">Sign In</span>
+                </Link>
+              )}
             </div>
           </div>
         )}
@@ -158,9 +176,9 @@ export default function Layout({ children }) {
                 Serving farmers across the country with premium products and expert guidance.
               </p>
               <div className="mt-4 space-y-1 text-gray-400 text-sm">
-                <p>📍 P.O. Box 7, 40101 Ahero, Kisumu County</p>
-                <p>📞 +254 757 790 379</p>
-                <p>💳 Equity Paybill: 247247 | Acc: 0790026955</p>
+                <p>📍 {COMPANY.address}</p>
+                <p>📞 {COMPANY.phone}</p>
+                <p>💳 Equity Paybill: {PAYMENT.paybillNumber} | Acc: {PAYMENT.accountNumber}</p>
               </div>
             </div>
             <div>
@@ -176,12 +194,11 @@ export default function Layout({ children }) {
             <div>
               <h4 className="font-semibold mb-4">Contact</h4>
               <ul className="space-y-2 text-gray-400 text-sm">
-                <li>P.O. Box 7, 40101 Ahero</li>
-                <li>Kisumu County, Kenya</li>
-                <li>+254 757 790 379</li>
-                <li>rizikisuppliers@gmail.com</li>
+                <li>{COMPANY.address}</li>
+                <li>{COMPANY.phone}</li>
+                <li>{COMPANY.email}</li>
                 <li className="pt-2">
-                  <a href="https://wa.me/254757790379" target="_blank" rel="noreferrer"
+                  <a href={WHATSAPP.baseUrl} target="_blank" rel="noreferrer"
                     className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                     💬 WhatsApp Us
                   </a>
@@ -190,7 +207,7 @@ export default function Layout({ children }) {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400 text-sm">
-            © 2025 Chicago Agro Supplies Limited. All rights reserved. | Ahero, Kisumu County, Kenya
+            © {new Date().getFullYear()} {COMPANY.name}. All rights reserved. | {COMPANY.location}
           </div>
         </div>
       </footer>

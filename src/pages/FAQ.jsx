@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown, ChevronUp, Search } from "lucide-react";
 import { Link } from "react-router-dom";
+import { COMPANY, PAYMENT, WHATSAPP } from '../constants';
 
 const faqs = [
-  { category: "Orders", question: "How do I place an order?", answer: "You can place an order directly on our website by adding products to your cart and proceeding to checkout. You can also call us at +254 757 790 379 or send us a WhatsApp message and our team will assist you." },
-  { category: "Orders", question: "Can I modify or cancel my order?", answer: "Yes, you can modify or cancel your order within 2 hours of placing it. After that, the order may already be processed for delivery. Contact us immediately via WhatsApp +254 757 790 379." },
+  { category: "Orders", question: "How do I place an order?", answer: `You can place an order directly on our website by adding products to your cart and proceeding to checkout. You can also call us at ${COMPANY.phone} or send us a WhatsApp message and our team will assist you.` },
+  { category: "Orders", question: "Can I modify or cancel my order?", answer: `Yes, you can modify or cancel your order within 2 hours of placing it. After that, the order may already be processed for delivery. Contact us immediately via WhatsApp ${COMPANY.phone}.` },
   { category: "Orders", question: "Do you offer bulk order discounts?", answer: "Yes! We offer attractive discounts for bulk orders. Orders above KES 50,000 get 10% off, orders above KES 100,000 get 15% off, and orders above KES 500,000 get 20% off. Contact our sales team for custom pricing." },
   { category: "Delivery", question: "How long does delivery take?", answer: "Delivery times depend on your location. Within Kisumu and Ahero: same day or next day. Major towns in Western Kenya: 1–2 business days. Rest of Kenya: 2–4 business days. Express delivery available at extra cost." },
   { category: "Delivery", question: "How much does delivery cost?", answer: "We offer free delivery on orders above KES 2,000. For orders below KES 2,000, delivery charges are KES 150 within Ahero/Kisumu, KES 250 for major towns, and KES 400 for the rest of Kenya." },
@@ -13,11 +14,11 @@ const faqs = [
   { category: "Products", question: "Are your products certified and authentic?", answer: "Yes, all our products are 100% authentic and certified. We source directly from licensed manufacturers and research institutions. Every product comes with its original certification and quality guarantee." },
   { category: "Products", question: "Do you offer product recommendations?", answer: "Absolutely! Our team of agricultural experts can recommend the best products for your specific crops, soil type, and farming goals. Contact us via WhatsApp or phone and we will guide you." },
   { category: "Products", question: "What if a product does not work as expected?", answer: "We stand behind every product we sell. If a product does not meet your expectations, contact us within 30 days and we will either replace it or give you a full refund. Your satisfaction is guaranteed." },
-  { category: "Payment", question: "What payment methods do you accept?", answer: "We accept Equity Bank Paybill 247247 (Account: 0790026955, Chicago Agro Supplies Limited, Kakamega Branch) and Cash on Delivery for local orders. Credit accounts available for qualified businesses." },
-  { category: "Payment", question: "How do I pay via Equity Paybill?", answer: "Go to Equity Bank App or dial *247#. Select Pay Bill, enter Paybill Number 247247, Account Number 0790026955, Account Name: Chicago Agro Supplies Limited, Branch: Kakamega, then enter your amount and confirm." },
+  { category: "Payment", question: "What payment methods do you accept?", answer: `We accept Equity Bank Paybill ${PAYMENT.paybillNumber} (Account: ${PAYMENT.accountNumber}, ${PAYMENT.accountName}, ${PAYMENT.branch} Branch) and Cash on Delivery for local orders. Credit accounts available for qualified businesses.` },
+  { category: "Payment", question: "How do I pay via Equity Paybill?", answer: `Go to Equity Bank App or dial *247#. Select Pay Bill, enter Paybill Number ${PAYMENT.paybillNumber}, Account Number ${PAYMENT.accountNumber}, Account Name: ${PAYMENT.accountName}, Branch: ${PAYMENT.branch}, then enter your amount and confirm.` },
   { category: "Payment", question: "Do you offer credit or payment plans?", answer: "Yes, we offer credit accounts and flexible payment plans for qualified businesses and farms. Contact our team to discuss options. A credit application and business verification may be required." },
   { category: "Returns", question: "What is your return policy?", answer: "We accept returns within 30 days of purchase for unopened products in their original condition. For products that have been opened but are defective, we offer a full replacement. Seeds have a 7-day return window." },
-  { category: "Returns", question: "How do I initiate a return?", answer: "To initiate a return, contact us via WhatsApp +254 757 790 379. Provide your order details and reason for return. We will arrange pickup or guide you on how to send the product back." },
+  { category: "Returns", question: "How do I initiate a return?", answer: `To initiate a return, contact us via WhatsApp ${COMPANY.phone}. Provide your order details and reason for return. We will arrange pickup or guide you on how to send the product back.` },
 ];
 
 const categories = ["All", "Orders", "Delivery", "Products", "Payment", "Returns"];
@@ -105,7 +106,7 @@ export default function FAQ() {
                   Contact Us
                 </button>
               </Link>
-              <a href="https://wa.me/254757790379" target="_blank" rel="noreferrer">
+              <a href={WHATSAPP.baseUrl} target="_blank" rel="noreferrer">
                 <button className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
                   💬 WhatsApp Us
                 </button>

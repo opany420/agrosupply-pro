@@ -1,7 +1,7 @@
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom'
 import { CartProvider } from './CartContext'
-import { lazy, Suspense, useEffect, useState } from 'react'
-import { supabase } from './supabase'
+import { AuthProvider, useAuth } from './AuthContext'
+import { lazy, Suspense, useEffect } from 'react'
 import ErrorBoundary from './components/ErrorBoundary'
 import Layout from './Layout'
 
@@ -14,6 +14,13 @@ const Login = lazy(() => import('./pages/Login'))
 const ProductDetail = lazy(() => import('./pages/ProductDetail'))
 const FAQ = lazy(() => import('./pages/FAQ'))
 const Checkout = lazy(() => import('./pages/Checkout'))
+const NotFound = lazy(() => import('./pages/NotFound'))
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -25,31 +32,23 @@ const PageLoader = () => (
 )
 
 function ProtectedRoute({ children }) {
-  const [session, setSession] = useState(undefined);
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-    });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-    return () => listener.subscription.unsubscribe();
-  }, []);
-
-  if (session === undefined) return (
+  if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-emerald-50">
       <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
-  return session ? children : <Navigate to="/login" replace />;
+  return user ? children : <Navigate to="/login" replace />;
 }
 
 function App() {
   return (
+    <AuthProvider>
     <CartProvider>
       <Router>
+        <ScrollToTop />
         <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
         <Routes>
@@ -66,11 +65,13 @@ function App() {
               <Dashboard />
             </ProtectedRoute>
           } />
+          <Route path="*" element={<Layout><NotFound /></Layout>} />
         </Routes>
         </Suspense>
         </ErrorBoundary>
       </Router>
     </CartProvider>
+    </AuthProvider>
   )
 }
 

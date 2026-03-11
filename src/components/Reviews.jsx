@@ -19,43 +19,60 @@ export default function Reviews() {
 
   const fetchReviews = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from('reviews')
-      .select('*')
-      .eq('approved', true)
-      .order('created_at', { ascending: false });
-    if (data) setReviews(data);
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('approved', true)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      if (data) setReviews(data);
+    } catch (err) {
+      console.error('Failed to load reviews:', err.message);
+    }
     setLoading(false);
   };
 
   const handleLike = async (id, currentLikes) => {
     if (liked.includes(id)) return;
     setLiked([...liked, id]);
-    await supabase.from('reviews').update({ likes: currentLikes + 1 }).eq('id', id);
     setReviews(reviews.map(r => r.id === id ? { ...r, likes: currentLikes + 1 } : r));
+    try {
+      const { error } = await supabase.from('reviews').update({ likes: currentLikes + 1 }).eq('id', id);
+      if (error) throw error;
+    } catch {
+      setLiked(liked.filter(l => l !== id));
+      setReviews(reviews.map(r => r.id === id ? { ...r, likes: currentLikes } : r));
+    }
   };
 
   const handleSubmit = async () => {
     if (!newReview.name || !newReview.product || !newReview.comment) return;
     setSubmitting(true);
-    const avatar = newReview.name.trim()[0].toUpperCase();
-    const location = newReview.location.trim() || 'Kenya';
-    const { data } = await supabase.from('reviews').insert([{
-      name: newReview.name,
-      location,
-      rating: newReview.rating,
-      product: newReview.product,
-      comment: newReview.comment,
-      avatar,
-      likes: 0,
-      approved: true,
-    }]).select().single();
-    if (data) setReviews([data, ...reviews]);
-    setSubmitting(false);
-    setSubmitted(true);
-    setShowForm(false);
-    setNewReview({ name: '', location: '', product: '', rating: 5, comment: '' });
-    setTimeout(() => setSubmitted(false), 5000);
+    try {
+      const avatar = newReview.name.trim()[0].toUpperCase();
+      const location = newReview.location.trim() || 'Kenya';
+      const { data, error } = await supabase.from('reviews').insert([{
+        name: newReview.name,
+        location,
+        rating: newReview.rating,
+        product: newReview.product,
+        comment: newReview.comment,
+        avatar,
+        likes: 0,
+        approved: true,
+      }]).select().single();
+      if (error) throw error;
+      if (data) setReviews([data, ...reviews]);
+      setSubmitted(true);
+      setShowForm(false);
+      setNewReview({ name: '', location: '', product: '', rating: 5, comment: '' });
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (err) {
+      alert('Failed to submit review: ' + (err.message || 'Unknown error'));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const avgRating = reviews.length

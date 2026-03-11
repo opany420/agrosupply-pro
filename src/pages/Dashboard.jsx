@@ -3,11 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Package, Users, ShoppingCart,
   TrendingUp, Bell, Settings, LogOut, Menu, X,
-  Banknote, ArrowUp, ArrowDown,
+  Banknote, ArrowUp,
   Search, Edit, Trash2, Plus, Leaf, Check, AlertCircle, Info, Upload
 } from "lucide-react";
 import { supabase } from '../supabase';
 import { formatCurrency, formatDate } from '../utils';
+import { COMPANY } from '../constants';
 import {
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
   LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -99,31 +100,45 @@ export default function Dashboard() {
   };
 
   const fetchOrders = async () => {
-    const { data } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
-    if (data) {
-      setOrders(data);
-      // Calculate revenue from orders
-      const revenue = data.reduce((sum, o) => {
-        const num = parseFloat((o.amount || '').toString().replace(/[^0-9.]/g, '')) || 0;
-        return sum + num;
-      }, 0);
-      setStats(prev => ({ ...prev, ordersCount: data.length, revenue }));
+    try {
+      const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      if (data) {
+        setOrders(data);
+        const revenue = data.reduce((sum, o) => {
+          const num = parseFloat((o.amount || '').toString().replace(/[^0-9.]/g, '')) || 0;
+          return sum + num;
+        }, 0);
+        setStats(prev => ({ ...prev, ordersCount: data.length, revenue }));
+      }
+    } catch (err) {
+      alert('Failed to load orders: ' + (err.message || 'Unknown error'));
     }
   };
 
   const fetchProducts = async () => {
-    const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-    if (data) {
-      setProducts(data);
-      setStats(prev => ({ ...prev, productsCount: data.length }));
+    try {
+      const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      if (data) {
+        setProducts(data);
+        setStats(prev => ({ ...prev, productsCount: data.length }));
+      }
+    } catch (err) {
+      alert('Failed to load products: ' + (err.message || 'Unknown error'));
     }
   };
 
   const fetchClients = async () => {
-    const { data } = await supabase.from('clients').select('*').order('created_at', { ascending: false });
-    if (data) {
-      setClients(data);
-      setStats(prev => ({ ...prev, clientsCount: data.length }));
+    try {
+      const { data, error } = await supabase.from('clients').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      if (data) {
+        setClients(data);
+        setStats(prev => ({ ...prev, clientsCount: data.length }));
+      }
+    } catch (err) {
+      alert('Failed to load clients: ' + (err.message || 'Unknown error'));
     }
   };
 
@@ -138,34 +153,49 @@ export default function Dashboard() {
   // Orders CRUD
   const handleAddOrder = async () => {
     if (!newOrder.client || !newOrder.product || !newOrder.amount) return;
-    // Get the highest existing order number to avoid duplicates
-    const { data: latest } = await supabase.from('orders').select('order_number').order('created_at', { ascending: false }).limit(1).single();
-    const lastNum = latest?.order_number ? parseInt(latest.order_number.replace('ORD-', ''), 10) || 0 : 0;
-    const order_number = `ORD-${String(lastNum + 1).padStart(3, "0")}`;
-    const amount = newOrder.amount.startsWith("KES") ? newOrder.amount : formatCurrency(Number(newOrder.amount));
-    const { data } = await supabase.from('orders').insert([{ order_number, client: newOrder.client, product: newOrder.product, amount, status: newOrder.status }]).select().single();
-    if (data) {
-      setOrders([data, ...orders]);
-      setStats(prev => ({ ...prev, ordersCount: prev.ordersCount + 1 }));
-      addNotification(ShoppingCart, "bg-blue-100 text-blue-600", "New order added", `${order_number} from ${newOrder.client}`);
+    try {
+      const { data: latest } = await supabase.from('orders').select('order_number').order('created_at', { ascending: false }).limit(1).single();
+      const lastNum = latest?.order_number ? parseInt(latest.order_number.replace('ORD-', ''), 10) || 0 : 0;
+      const order_number = `ORD-${String(lastNum + 1).padStart(3, "0")}`;
+      const amount = newOrder.amount.startsWith("KES") ? newOrder.amount : formatCurrency(Number(newOrder.amount));
+      const { data, error } = await supabase.from('orders').insert([{ order_number, client: newOrder.client, product: newOrder.product, amount, status: newOrder.status }]).select().single();
+      if (error) throw error;
+      if (data) {
+        setOrders([data, ...orders]);
+        setStats(prev => ({ ...prev, ordersCount: prev.ordersCount + 1 }));
+        addNotification(ShoppingCart, "bg-blue-100 text-blue-600", "New order added", `${order_number} from ${newOrder.client}`);
+      }
+      setNewOrder({ client: "", product: "", amount: "", status: "Pending" });
+      setShowNewOrderModal(false);
+    } catch (err) {
+      alert('Failed to add order: ' + (err.message || 'Unknown error'));
     }
-    setNewOrder({ client: "", product: "", amount: "", status: "Pending" });
-    setShowNewOrderModal(false);
   };
 
   const handleDeleteOrder = async (id) => {
-    await supabase.from('orders').delete().eq('id', id);
-    setOrders(orders.filter(o => o.id !== id));
-    setStats(prev => ({ ...prev, ordersCount: prev.ordersCount - 1 }));
+    if (!window.confirm('Are you sure you want to delete this order?')) return;
+    try {
+      const { error } = await supabase.from('orders').delete().eq('id', id);
+      if (error) throw error;
+      setOrders(orders.filter(o => o.id !== id));
+      setStats(prev => ({ ...prev, ordersCount: prev.ordersCount - 1 }));
+    } catch (err) {
+      alert('Failed to delete order: ' + (err.message || 'Unknown error'));
+    }
   };
 
   const handleSaveEdit = async () => {
-    await supabase.from('orders').update({
-      client: editingOrder.client, product: editingOrder.product,
-      amount: editingOrder.amount, status: editingOrder.status,
-    }).eq('id', editingOrder.id);
-    setOrders(orders.map(o => o.id === editingOrder.id ? editingOrder : o));
-    setShowEditModal(false);
+    try {
+      const { error } = await supabase.from('orders').update({
+        client: editingOrder.client, product: editingOrder.product,
+        amount: editingOrder.amount, status: editingOrder.status,
+      }).eq('id', editingOrder.id);
+      if (error) throw error;
+      setOrders(orders.map(o => o.id === editingOrder.id ? editingOrder : o));
+      setShowEditModal(false);
+    } catch (err) {
+      alert('Failed to update order: ' + (err.message || 'Unknown error'));
+    }
   };
 
   // Products CRUD
@@ -184,60 +214,89 @@ export default function Dashboard() {
   const handleAddProduct = async () => {
     if (!newProduct.name || !newProduct.price || !newProduct.stock) return;
     setProductLoading(true);
-    const { data } = await supabase.from('products').insert([{
-      name: newProduct.name, category: newProduct.category,
-      price: Number(newProduct.price), stock: Number(newProduct.stock),
-      description: newProduct.description, image: newProduct.image, unit: newProduct.unit,
-    }]).select().single();
-    if (data) {
-      setProducts([data, ...products]);
-      setStats(prev => ({ ...prev, productsCount: prev.productsCount + 1 }));
-      addNotification(Package, "bg-emerald-100 text-emerald-600", "Product added", `${newProduct.name} added to catalogue`);
+    try {
+      const { data, error } = await supabase.from('products').insert([{
+        name: newProduct.name, category: newProduct.category,
+        price: Number(newProduct.price), stock: Number(newProduct.stock),
+        description: newProduct.description, image: newProduct.image, unit: newProduct.unit,
+      }]).select().single();
+      if (error) throw error;
+      if (data) {
+        setProducts([data, ...products]);
+        setStats(prev => ({ ...prev, productsCount: prev.productsCount + 1 }));
+        addNotification(Package, "bg-emerald-100 text-emerald-600", "Product added", `${newProduct.name} added to catalogue`);
+      }
+      setNewProduct(emptyProduct);
+      setShowProductModal(false);
+    } catch (err) {
+      alert('Failed to add product: ' + (err.message || 'Unknown error'));
+    } finally {
+      setProductLoading(false);
     }
-    setNewProduct(emptyProduct);
-    setProductLoading(false);
-    setShowProductModal(false);
   };
 
   const handleDeleteProduct = async (id) => {
-    await supabase.from('products').delete().eq('id', id);
-    setProducts(products.filter(p => p.id !== id));
-    setStats(prev => ({ ...prev, productsCount: prev.productsCount - 1 }));
+    if (!window.confirm('Are you sure you want to delete this product?')) return;
+    try {
+      const { error } = await supabase.from('products').delete().eq('id', id);
+      if (error) throw error;
+      setProducts(products.filter(p => p.id !== id));
+      setStats(prev => ({ ...prev, productsCount: prev.productsCount - 1 }));
+    } catch (err) {
+      alert('Failed to delete product: ' + (err.message || 'Unknown error'));
+    }
   };
 
   const handleSaveEditProduct = async () => {
-    await supabase.from('products').update({
-      name: editingProduct.name, category: editingProduct.category,
-      price: Number(editingProduct.price), stock: Number(editingProduct.stock),
-      description: editingProduct.description, image: editingProduct.image, unit: editingProduct.unit,
-    }).eq('id', editingProduct.id);
-    setProducts(products.map(p => p.id === editingProduct.id ? { ...p, ...editingProduct } : p));
-    setShowEditProductModal(false);
+    try {
+      const { error } = await supabase.from('products').update({
+        name: editingProduct.name, category: editingProduct.category,
+        price: Number(editingProduct.price), stock: Number(editingProduct.stock),
+        description: editingProduct.description, image: editingProduct.image, unit: editingProduct.unit,
+      }).eq('id', editingProduct.id);
+      if (error) throw error;
+      setProducts(products.map(p => p.id === editingProduct.id ? { ...p, ...editingProduct } : p));
+      setShowEditProductModal(false);
+    } catch (err) {
+      alert('Failed to update product: ' + (err.message || 'Unknown error'));
+    }
   };
 
   // Clients CRUD
   const handleAddClient = async () => {
     if (!newClient.name || !newClient.email) return;
     setClientLoading(true);
-    const { data } = await supabase.from('clients').insert([{
-      name: newClient.name, email: newClient.email,
-      phone: newClient.phone, status: newClient.status,
-      total_orders: 0, total_spent: 'KES 0',
-    }]).select().single();
-    if (data) {
-      setClients([data, ...clients]);
-      setStats(prev => ({ ...prev, clientsCount: prev.clientsCount + 1 }));
-      addNotification(Users, "bg-purple-100 text-purple-600", "New client added", `${newClient.name} joined`);
+    try {
+      const { data, error } = await supabase.from('clients').insert([{
+        name: newClient.name, email: newClient.email,
+        phone: newClient.phone, status: newClient.status,
+        total_orders: 0, total_spent: 'KES 0',
+      }]).select().single();
+      if (error) throw error;
+      if (data) {
+        setClients([data, ...clients]);
+        setStats(prev => ({ ...prev, clientsCount: prev.clientsCount + 1 }));
+        addNotification(Users, "bg-purple-100 text-purple-600", "New client added", `${newClient.name} joined`);
+      }
+      setNewClient({ name: "", email: "", phone: "", status: "Active" });
+      setShowClientModal(false);
+    } catch (err) {
+      alert('Failed to add client: ' + (err.message || 'Unknown error'));
+    } finally {
+      setClientLoading(false);
     }
-    setNewClient({ name: "", email: "", phone: "", status: "Active" });
-    setClientLoading(false);
-    setShowClientModal(false);
   };
 
   const handleDeleteClient = async (id) => {
-    await supabase.from('clients').delete().eq('id', id);
-    setClients(clients.filter(c => c.id !== id));
-    setStats(prev => ({ ...prev, clientsCount: prev.clientsCount - 1 }));
+    if (!window.confirm('Are you sure you want to delete this client?')) return;
+    try {
+      const { error } = await supabase.from('clients').delete().eq('id', id);
+      if (error) throw error;
+      setClients(clients.filter(c => c.id !== id));
+      setStats(prev => ({ ...prev, clientsCount: prev.clientsCount - 1 }));
+    } catch (err) {
+      alert('Failed to delete client: ' + (err.message || 'Unknown error'));
+    }
   };
 
   const addNotification = (icon, color, title, desc) => {
@@ -276,7 +335,7 @@ export default function Dashboard() {
           ))}
         </nav>
         <div className="p-4 border-t border-gray-700">
-          <button onClick={async () => { await supabase.auth.signOut(); window.location.href = '/login'; }}
+          <button onClick={async () => { try { await supabase.auth.signOut(); window.location.href = '/login'; } catch { alert('Sign out failed. Please try again.'); } }}
             className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white transition-all">
             <LogOut className="w-5 h-5 flex-shrink-0" />
             {sidebarOpen && <span className="font-medium text-sm">Exit Dashboard</span>}
@@ -699,10 +758,10 @@ export default function Dashboard() {
                   <h3 className="text-2xl font-bold text-gray-900 mb-6">Settings</h3>
                   <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6 max-w-2xl">
                     {[
-                      { label: "Company Name", value: "Chicago Agro Supplies Limited" },
-                      { label: "Email", value: "rizikisuppliers@gmail.com" },
-                      { label: "Phone", value: "+254 757 790 379" },
-                      { label: "Address", value: "P.O. Box 7, 40101 Ahero, Kisumu County, Kenya" },
+                      { label: "Company Name", value: COMPANY.name },
+                      { label: "Email", value: COMPANY.email },
+                      { label: "Phone", value: COMPANY.phone },
+                      { label: "Address", value: COMPANY.postalFull },
                     ].map(field => (
                       <div key={field.label}>
                         <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>

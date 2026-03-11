@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Truck, Shield, Star, Users, Package, Award, Leaf, ArrowRight, Phone } from "lucide-react";
 import Reviews from '../components/Reviews';
+import { COMPANY, PAYMENT, WHATSAPP } from '../constants';
 
 const categories = [
   { name: "Seeds", description: "Premium crop seeds for maximum yield", image: "https://farmbizafrica.com/wp-content/uploads/2019/05/chia_seed-1.jpg" },
@@ -24,7 +25,7 @@ const stats = [
 const features = [
   { icon: Award, title: "Premium Quality", description: "All products certified and tested for maximum performance on Kenyan farms" },
   { icon: Truck, title: "Fast Delivery", description: "Same day delivery in Ahero/Kisumu, 2–4 days countrywide Kenya" },
-  { icon: Phone, title: "Expert Support", description: "Agricultural experts available 7 days a week — call +254 757 790 379" },
+  { icon: Phone, title: "Expert Support", description: `Agricultural experts available 7 days a week \u2014 call ${COMPANY.phone}` },
   { icon: Shield, title: "Guaranteed", description: "100% satisfaction guarantee on all products" },
   { icon: Leaf, title: "Eco-Friendly", description: "Committed to sustainable and responsible farming across Kenya" },
   { icon: Star, title: "Best Prices", description: "Competitive pricing with bulk discount options for all farmers" },
@@ -66,7 +67,7 @@ export default function Home() {
                     Browse Products <ArrowRight className="w-5 h-5" />
                   </button>
                 </Link>
-                <a href="https://wa.me/254757790379?text=Hello! I am interested in your agricultural products." target="_blank" rel="noreferrer">
+                <a href={`${WHATSAPP.baseUrl}?text=${encodeURIComponent(WHATSAPP.defaultMessage)}`} target="_blank" rel="noreferrer">
                   <button className="border-2 border-white/30 hover:border-white text-white px-8 py-4 rounded-xl font-semibold transition-all hover:bg-white/10">
                     💬 WhatsApp Us
                   </button>
@@ -177,14 +178,14 @@ export default function Home() {
             <p className="text-xl text-white/80 mb-4">
               Join thousands of successful farmers who trust Chicago Agro Supplies for all their agricultural needs.
             </p>
-            <p className="text-emerald-300 mb-10">📍 Ahero, Kisumu County | 📞 +254 757 790 379 | 💳 Equity Paybill: 247247</p>
+            <p className="text-emerald-300 mb-10">📍 {COMPANY.location} | 📞 {COMPANY.phone} | 💳 Equity Paybill: {PAYMENT.paybillNumber}</p>
             <div className="flex flex-wrap gap-4 justify-center">
               <Link to="/products">
                 <button className="bg-white text-emerald-800 hover:bg-emerald-50 px-8 py-4 rounded-xl font-bold transition-all hover:scale-105 flex items-center gap-2">
                   Shop Now <ArrowRight className="w-5 h-5" />
                 </button>
               </Link>
-              <a href="https://wa.me/254757790379?text=Hello! I want to place an order." target="_blank" rel="noreferrer">
+              <a href={`${WHATSAPP.baseUrl}?text=${encodeURIComponent(WHATSAPP.orderMessage)}`} target="_blank" rel="noreferrer">
                 <button className="border-2 border-white text-white hover:bg-white/10 px-8 py-4 rounded-xl font-bold transition-all">
                   💬 WhatsApp Us
                 </button>

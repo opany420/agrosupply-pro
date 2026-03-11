@@ -6,6 +6,7 @@ import { ShoppingBag, CheckCircle, Truck, CreditCard, User, MapPin, Phone, Mail,
 import { supabase } from "../supabase";
 import emailjs from "@emailjs/browser";
 import { formatCurrency } from "../utils";
+import { COMPANY, PAYMENT, WHATSAPP } from '../constants';
 
 export default function Checkout() {
   const { cart, totalPrice, clearCart } = useCart();
@@ -52,16 +53,23 @@ export default function Checkout() {
     setLoading(true);
 
     // Save each cart item as an order in Supabase
-    for (const item of cart) {
-      const order_number = `ORD-${Date.now()}-${item.id}`;
-      await supabase.from('orders').insert([{
-        order_number,
-        client: `${formData.firstName} ${formData.lastName}`,
-        product: item.name,
-        amount: formatCurrency(item.price * item.quantity),
-        status: 'Pending',
-        phone: formData.phone,
-      }]);
+    try {
+      for (const item of cart) {
+        const order_number = `ORD-${Date.now()}-${item.id}`;
+        const { error } = await supabase.from('orders').insert([{
+          order_number,
+          client: `${formData.firstName} ${formData.lastName}`,
+          product: item.name,
+          amount: formatCurrency(item.price * item.quantity),
+          status: 'Pending',
+          phone: formData.phone,
+        }]);
+        if (error) throw error;
+      }
+    } catch (err) {
+      alert('Failed to save order: ' + (err.message || 'Unknown error'));
+      setLoading(false);
+      return;
     }
 
     // Build WhatsApp message
@@ -70,7 +78,7 @@ export default function Checkout() {
     ).join("%0A");
 
     const message =
-      `🛒 *NEW ORDER - Chicago Agro Supplies*%0A%0A` +
+      `🛒 *NEW ORDER - ${COMPANY.name}*%0A%0A` +
       `*Customer Details:*%0A` +
       `Name: ${formData.firstName} ${formData.lastName}%0A` +
       `Phone: ${formData.phone}%0A` +
@@ -105,7 +113,7 @@ export default function Checkout() {
       }
     }
 
-    window.open(`https://wa.me/254757790379?text=${message}`, "_blank");
+    window.open(`${WHATSAPP.baseUrl}?text=${encodeURIComponent(message)}`, "_blank");
 
     setLoading(false);
     setOrderPlaced(true);
@@ -147,10 +155,10 @@ export default function Checkout() {
               <div className="space-y-1 text-sm text-blue-800">
                 <p>1. Go to <strong>Equity Bank App or USSD *247#</strong></p>
                 <p>2. Select <strong>Pay Bill</strong></p>
-                <p>3. Paybill Number: <strong>247247</strong></p>
-                <p>4. Account Number: <strong>0790026955</strong></p>
-                <p>5. Account Name: <strong>Chicago Agro Supplies Limited</strong></p>
-                <p>6. Branch: <strong>Kakamega</strong></p>
+                <p>3. Paybill Number: <strong>{PAYMENT.paybillNumber}</strong></p>
+                <p>4. Account Number: <strong>{PAYMENT.accountNumber}</strong></p>
+                <p>5. Account Name: <strong>{PAYMENT.accountName}</strong></p>
+                <p>6. Branch: <strong>{PAYMENT.branch}</strong></p>
                 <p>7. Amount: <strong>{formatCurrency(totalPrice)}</strong></p>
               </div>
               <p className="text-blue-600 text-xs mt-3">📌 Send payment screenshot to our WhatsApp to confirm your order</p>

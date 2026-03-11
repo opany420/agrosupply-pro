@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
 import { motion } from "framer-motion";
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle, MessageCircle } from "lucide-react";
+import { COMPANY, PAYMENT, WHATSAPP } from '../constants';
 
 const contactInfo = [
-  { icon: MapPin, title: "Visit Us", details: ["P.O. Box 7, 40101 Ahero", "Ahero, Kisumu County"], color: "bg-blue-100 text-blue-600" },
-  { icon: Phone, title: "Call Us", details: ["+254 757 790 379", "Mon - Sat: 8AM - 6PM"], color: "bg-emerald-100 text-emerald-600" },
-  { icon: Mail, title: "Email Us", details: ["rizikisuppliers@gmail.com", "support@rizikisuppliers.com"], color: "bg-purple-100 text-purple-600" },
-  { icon: Clock, title: "Working Hours", details: ["Mon - Fri: 8AM - 6PM", "Sat: 9AM - 4PM"], color: "bg-amber-100 text-amber-600" },
+  { icon: MapPin, title: "Visit Us", details: [COMPANY.address, COMPANY.location], color: "bg-blue-100 text-blue-600" },
+  { icon: Phone, title: "Call Us", details: [COMPANY.phone, COMPANY.workingHours], color: "bg-emerald-100 text-emerald-600" },
+  { icon: Mail, title: "Email Us", details: [COMPANY.email], color: "bg-purple-100 text-purple-600" },
+  { icon: Clock, title: "Working Hours", details: [COMPANY.workingHours], color: "bg-amber-100 text-amber-600" },
 ];
 
 const faqs = [
   { q: "Do you offer bulk discounts?", a: "Yes! Orders over KES 50,000 get 10% off. Contact us for custom pricing." },
   { q: "What is your delivery time?", a: "1–2 days within Kisumu, 2–4 days upcountry Kenya." },
-  { q: "How do I pay?", a: "We accept Equity Paybill 247247, Account 0790026955 (Chicago Agro Supplies Limited, Kakamega Branch) and Cash on Delivery." },
+  { q: "How do I pay?", a: `We accept Equity Paybill ${PAYMENT.paybillNumber}, Account ${PAYMENT.accountNumber} (${PAYMENT.accountName}, ${PAYMENT.branch} Branch) and Cash on Delivery.` },
   { q: "Do you offer credit accounts?", a: "Yes, for qualified businesses. Contact us to apply." },
 ];
 
@@ -32,7 +33,7 @@ export default function Contact() {
       `*Subject:* ${formData.subject}%0A%0A` +
       `*Message:*%0A${formData.message}`;
 
-    window.open(`https://wa.me/254757790379?text=${msg}`, "_blank");
+    window.open(`${WHATSAPP.baseUrl}?text=${encodeURIComponent(msg)}`, "_blank");
 
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 4000);
@@ -178,19 +179,19 @@ export default function Contact() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">Paybill</span>
-                    <span className="font-semibold text-gray-800">247247</span>
+                    <span className="font-semibold text-gray-800">{PAYMENT.paybillNumber}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">Account No.</span>
-                    <span className="font-semibold text-gray-800">0790026955</span>
+                    <span className="font-semibold text-gray-800">{PAYMENT.accountNumber}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">Account Name</span>
-                    <span className="font-semibold text-gray-800">Chicago Agro Supplies Limited</span>
+                    <span className="font-semibold text-gray-800">{PAYMENT.accountName}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">Branch</span>
-                    <span className="font-semibold text-gray-800">Kakamega</span>
+                    <span className="font-semibold text-gray-800">{PAYMENT.branch}</span>
                   </div>
                 </div>
               </div>

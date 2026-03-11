@@ -4,6 +4,7 @@ import { Menu, X, Leaf, Home, Package, Info, Phone, LayoutDashboard, LogIn, LogO
 import { useCart } from './CartContext';
 import { useAuth } from './AuthContext';
 import Cart from './components/Cart';
+import ChatWidget from './components/ChatWidget';
 import { COMPANY, PAYMENT, WHATSAPP } from './constants';
 
 export default function Layout({ children }) {
@@ -156,6 +157,8 @@ export default function Layout({ children }) {
 
       {/* Main Content */}
       <main className="flex-1">{children}</main>
+
+      <ChatWidget />
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-16">

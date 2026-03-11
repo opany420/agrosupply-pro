@@ -70,6 +70,8 @@ export default function FAQ() {
               <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }} className="border border-gray-200 rounded-2xl overflow-hidden">
                 <button onClick={() => setOpenId(openId === idx ? null : idx)}
+                  aria-expanded={openId === idx}
+                  aria-controls={`faq-panel-${idx}`}
                   className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors">
                   <div className="flex items-center gap-4">
                     <span className="bg-emerald-100 text-emerald-700 text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0">
@@ -80,7 +82,8 @@ export default function FAQ() {
                   {openId === idx ? <ChevronUp className="w-5 h-5 text-emerald-600 flex-shrink-0" /> : <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />}
                 </button>
                 {openId === idx && (
-                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+                  <motion.div id={`faq-panel-${idx}`} role="region" aria-label={faq.question}
+                    initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
                     className="px-6 pb-6 border-t border-gray-100">
                     <p className="text-gray-600 leading-relaxed pt-4">{faq.answer}</p>
                   </motion.div>

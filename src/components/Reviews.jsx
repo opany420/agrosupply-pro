@@ -60,10 +60,9 @@ export default function Reviews() {
         comment: newReview.comment,
         avatar,
         likes: 0,
-        approved: true,
+        approved: false,
       }]).select().single();
       if (error) throw error;
-      if (data) setReviews([data, ...reviews]);
       setSubmitted(true);
       setShowForm(false);
       setNewReview({ name: '', location: '', product: '', rating: 5, comment: '' });
@@ -103,7 +102,7 @@ export default function Reviews() {
         {submitted && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
             className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-6 py-4 rounded-xl mb-8 text-center font-medium">
-            ✅ Thank you! Your review has been published successfully.
+            ✅ Thank you! Your review is pending approval.
           </motion.div>
         )}
 

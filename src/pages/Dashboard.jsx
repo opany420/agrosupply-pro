@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Package, Users, ShoppingCart,
@@ -91,6 +91,59 @@ export default function Dashboard() {
   const [showClientModal, setShowClientModal] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
   const [editingProduct, setEditingProduct] = useState(null);
+
+  // Modal refs for focus trapping
+  const newOrderModalRef = useRef(null);
+  const editOrderModalRef = useRef(null);
+  const productModalRef = useRef(null);
+  const editProductModalRef = useRef(null);
+  const clientModalRef = useRef(null);
+  const previousModalFocusRef = useRef(null);
+
+  // Focus trap + Escape-to-close for all modals
+  useEffect(() => {
+    let modalRef = null;
+    let closeFn = null;
+
+    if (showNewOrderModal) { modalRef = newOrderModalRef; closeFn = () => setShowNewOrderModal(false); }
+    else if (showEditModal) { modalRef = editOrderModalRef; closeFn = () => setShowEditModal(false); }
+    else if (showProductModal) { modalRef = productModalRef; closeFn = () => setShowProductModal(false); }
+    else if (showEditProductModal) { modalRef = editProductModalRef; closeFn = () => setShowEditProductModal(false); }
+    else if (showClientModal) { modalRef = clientModalRef; closeFn = () => setShowClientModal(false); }
+
+    if (!modalRef || !closeFn) return;
+    previousModalFocusRef.current = document.activeElement;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') { closeFn(); return; }
+      if (e.key !== 'Tab') return;
+      const modal = modalRef.current;
+      if (!modal) return;
+      const focusable = modal.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    requestAnimationFrame(() => {
+      const modal = modalRef.current;
+      if (modal) {
+        const first = modal.querySelector('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (first) first.focus();
+      }
+    });
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      if (previousModalFocusRef.current?.focus) previousModalFocusRef.current.focus();
+    };
+  }, [showNewOrderModal, showEditModal, showProductModal, showEditProductModal, showClientModal]);
 
   // Notifications
   const [notifications, setNotifications] = useState([
@@ -616,7 +669,7 @@ export default function Dashboard() {
       <AnimatePresence>
         {showNewOrderModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+            <motion.div ref={newOrderModalRef} role="dialog" aria-modal="true" aria-label="New Order" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-900">New Order</h3>
@@ -664,7 +717,7 @@ export default function Dashboard() {
       <AnimatePresence>
         {showEditModal && editingOrder && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+            <motion.div ref={editOrderModalRef} role="dialog" aria-modal="true" aria-label="Edit Order" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-900">Edit Order {editingOrder.order_number}</h3>
@@ -706,7 +759,7 @@ export default function Dashboard() {
       <AnimatePresence>
         {showProductModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+            <motion.div ref={productModalRef} role="dialog" aria-modal="true" aria-label="Add New Product" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-900">Add New Product</h3>
@@ -786,7 +839,7 @@ export default function Dashboard() {
       <AnimatePresence>
         {showEditProductModal && editingProduct && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+            <motion.div ref={editProductModalRef} role="dialog" aria-modal="true" aria-label="Edit Product" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-900">Edit Product</h3>
@@ -858,7 +911,7 @@ export default function Dashboard() {
       <AnimatePresence>
         {showClientModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+            <motion.div ref={clientModalRef} role="dialog" aria-modal="true" aria-label="Add New Client" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-900">Add New Client</h3>

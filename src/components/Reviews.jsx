@@ -24,7 +24,8 @@ export default function Reviews() {
         .from('reviews')
         .select('*')
         .eq('approved', true)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(20);
       if (error) throw error;
       if (data) setReviews(data);
     } catch (err) {

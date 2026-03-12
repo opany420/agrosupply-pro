@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { motion } from "framer-motion";
 import { Leaf, LogIn, Eye, EyeOff } from "lucide-react";
 import { supabase } from '../supabase';
@@ -49,6 +50,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-800 to-green-900 flex items-center justify-center px-4">
+      <Helmet><title>Admin Login | Chicago Agro Supplies</title></Helmet>
       <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
         className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
 

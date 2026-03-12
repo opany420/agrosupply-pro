@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Helmet } from 'react-helmet-async';
 import { motion } from "framer-motion";
 import { ChevronDown, ChevronUp, Search } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -37,6 +38,7 @@ export default function FAQ() {
 
   return (
     <div className="min-h-screen pt-20">
+      <Helmet><title>FAQ | Chicago Agro Supplies</title></Helmet>
       <section className="py-20 bg-gradient-to-br from-emerald-800 to-green-900 text-white">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>

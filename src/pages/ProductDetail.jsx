@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { motion } from "framer-motion";
 import { useParams, Link } from 'react-router-dom';
 import { ShoppingCart, Star, CheckCircle, ArrowLeft, Truck, Shield, Award } from "lucide-react";
@@ -78,6 +79,7 @@ export default function ProductDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
+      <Helmet><title>{product.name} | Chicago Agro Supplies</title></Helmet>
       <div className="max-w-7xl mx-auto px-6 py-8">
 
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-8">

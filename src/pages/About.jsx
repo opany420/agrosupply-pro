@@ -1,4 +1,5 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { motion } from "framer-motion";
 import { Leaf, Award, Users, Globe, Heart, TrendingUp } from "lucide-react";
 
@@ -27,6 +28,7 @@ const milestones = [
 export default function About() {
   return (
     <div className="min-h-screen pt-20">
+      <Helmet><title>About Us | Chicago Agro Supplies</title></Helmet>
 
       {/* Hero */}
       <section className="relative py-24 bg-gradient-to-br from-emerald-800 to-green-900 overflow-hidden">

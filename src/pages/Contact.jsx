@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { motion } from "framer-motion";
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle, MessageCircle } from "lucide-react";
 import { COMPANY, PAYMENT, WHATSAPP } from '../constants';
@@ -42,6 +43,7 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen pt-20">
+      <Helmet><title>Contact Us | Chicago Agro Supplies</title></Helmet>
 
       {/* Hero */}
       <section className="py-20 bg-gradient-to-br from-emerald-800 to-green-900 text-white">

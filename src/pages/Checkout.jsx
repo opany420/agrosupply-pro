@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Helmet } from 'react-helmet-async';
 import { motion } from "framer-motion";
 import { useCart } from "../CartContext";
 import { Link } from "react-router-dom";
@@ -191,6 +192,7 @@ export default function Checkout() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+      <Helmet><title>Checkout | Chicago Agro Supplies</title></Helmet>
       <div className="max-w-6xl mx-auto px-6">
 
         <div className="mb-8">

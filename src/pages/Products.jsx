@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { motion } from "framer-motion";
 import { Search, ShoppingCart } from "lucide-react";
 import { useCart } from '../CartContext';
@@ -64,6 +65,7 @@ export default function Products() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
+      <Helmet><title>Products | Chicago Agro Supplies</title></Helmet>
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>

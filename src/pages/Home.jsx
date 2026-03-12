@@ -1,4 +1,5 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Truck, Shield, Star, Users, Package, Award, Leaf, ArrowRight, Phone } from "lucide-react";
@@ -34,6 +35,7 @@ const features = [
 export default function Home() {
   return (
     <div>
+      <Helmet><title>Chicago Agro Supplies | Farm Inputs & Equipment Kenya</title></Helmet>
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">

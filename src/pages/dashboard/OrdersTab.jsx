@@ -1,6 +1,6 @@
 import React from 'react';
 import { ShoppingCart, Search, Edit, Trash2, Plus } from "lucide-react";
-import { formatDate } from '../../utils';
+import { formatDate, formatCurrency } from '../../utils';
 
 const statusColors = {
   Delivered: "bg-emerald-100 text-emerald-700",
@@ -58,7 +58,7 @@ export default function OrdersTab({
                   <td className="px-6 py-4 text-sm font-medium text-emerald-600">{order.order_number}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">{order.client}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{order.product}</td>
-                  <td className="px-6 py-4 text-sm font-semibold text-gray-900">{order.amount}</td>
+                  <td className="px-6 py-4 text-sm font-semibold text-gray-900">{formatCurrency(order.amount)}</td>
                   <td className="px-6 py-4"><span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[order.status]}`}>{order.status}</span></td>
                   <td className="px-6 py-4 text-sm text-gray-500">{formatDate(order.created_at)}</td>
                   <td className="px-6 py-4">

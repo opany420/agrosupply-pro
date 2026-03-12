@@ -61,7 +61,7 @@ export default function Checkout() {
           order_number,
           client: `${formData.firstName} ${formData.lastName}`,
           product: item.name,
-          amount: formatCurrency(item.price * item.quantity),
+          amount: item.price * item.quantity,
           status: 'Pending',
           phone: formData.phone,
         }]);

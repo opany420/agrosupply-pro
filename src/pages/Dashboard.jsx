@@ -177,10 +177,7 @@ export default function Dashboard() {
       // Fetch total revenue separately
       const { data: allAmounts, error: amtErr } = await supabase.from('orders').select('amount');
       if (!amtErr && allAmounts) {
-        const revenue = allAmounts.reduce((sum, o) => {
-          const num = parseFloat((o.amount || '').toString().replace(/[^0-9.]/g, '')) || 0;
-          return sum + num;
-        }, 0);
+        const revenue = allAmounts.reduce((sum, o) => sum + (Number(o.amount) || 0), 0);
         setStats(prev => ({ ...prev, revenue }));
       }
     } catch (err) {
@@ -231,7 +228,7 @@ export default function Dashboard() {
     if (!newOrder.client || !newOrder.product || !newOrder.amount) return;
     try {
       const order_number = `ORD-${Date.now()}`;
-      const amount = newOrder.amount.startsWith("KES") ? newOrder.amount : formatCurrency(Number(newOrder.amount));
+      const amount = Number(newOrder.amount) || 0;
       const { data, error } = await supabase.from('orders').insert([{ order_number, client: newOrder.client, product: newOrder.product, amount, status: newOrder.status }]).select().single();
       if (error) throw error;
       if (data) {

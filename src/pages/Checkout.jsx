@@ -55,7 +55,7 @@ export default function Checkout() {
     // Save each cart item as an order in Supabase
     try {
       for (const item of cart) {
-        const order_number = `ORD-${Date.now()}-${item.id}`;
+        const order_number = `ORD-${Date.now()}`;
         const { error } = await supabase.from('orders').insert([{
           order_number,
           client: `${formData.firstName} ${formData.lastName}`,

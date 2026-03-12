@@ -105,6 +105,12 @@ export default function Dashboard() {
   const [imageUploading, setImageUploading] = useState(false);
   const [clientLoading, setClientLoading] = useState(false);
 
+  // Pagination
+  const PAGE_SIZE = 10;
+  const [ordersPage, setOrdersPage] = useState(1);
+  const [productsPage, setProductsPage] = useState(1);
+  const [clientsPage, setClientsPage] = useState(1);
+
   // Reviews
   const [pendingReviews, setPendingReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
@@ -156,43 +162,54 @@ export default function Dashboard() {
     }
   };
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (page = ordersPage) => {
     try {
-      const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+      const from = (page - 1) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+      const { data, error, count } = await supabase.from('orders').select('*', { count: 'exact' }).order('created_at', { ascending: false }).range(from, to);
       if (error) throw error;
       if (data) {
         setOrders(data);
-        const revenue = data.reduce((sum, o) => {
+        setStats(prev => ({ ...prev, ordersCount: count ?? data.length }));
+      }
+      // Fetch total revenue separately
+      const { data: allAmounts, error: amtErr } = await supabase.from('orders').select('amount');
+      if (!amtErr && allAmounts) {
+        const revenue = allAmounts.reduce((sum, o) => {
           const num = parseFloat((o.amount || '').toString().replace(/[^0-9.]/g, '')) || 0;
           return sum + num;
         }, 0);
-        setStats(prev => ({ ...prev, ordersCount: data.length, revenue }));
+        setStats(prev => ({ ...prev, revenue }));
       }
     } catch (err) {
       alert('Failed to load orders: ' + (err.message || 'Unknown error'));
     }
   };
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (page = productsPage) => {
     try {
-      const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+      const from = (page - 1) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+      const { data, error, count } = await supabase.from('products').select('*', { count: 'exact' }).order('created_at', { ascending: false }).range(from, to);
       if (error) throw error;
       if (data) {
         setProducts(data);
-        setStats(prev => ({ ...prev, productsCount: data.length }));
+        setStats(prev => ({ ...prev, productsCount: count ?? data.length }));
       }
     } catch (err) {
       alert('Failed to load products: ' + (err.message || 'Unknown error'));
     }
   };
 
-  const fetchClients = async () => {
+  const fetchClients = async (page = clientsPage) => {
     try {
-      const { data, error } = await supabase.from('clients').select('*').order('created_at', { ascending: false });
+      const from = (page - 1) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+      const { data, error, count } = await supabase.from('clients').select('*', { count: 'exact' }).order('created_at', { ascending: false }).range(from, to);
       if (error) throw error;
       if (data) {
         setClients(data);
-        setStats(prev => ({ ...prev, clientsCount: data.length }));
+        setStats(prev => ({ ...prev, clientsCount: count ?? data.length }));
       }
     } catch (err) {
       alert('Failed to load clients: ' + (err.message || 'Unknown error'));
@@ -211,9 +228,7 @@ export default function Dashboard() {
   const handleAddOrder = async () => {
     if (!newOrder.client || !newOrder.product || !newOrder.amount) return;
     try {
-      const { data: latest } = await supabase.from('orders').select('order_number').order('created_at', { ascending: false }).limit(1).single();
-      const lastNum = latest?.order_number ? parseInt(latest.order_number.replace('ORD-', ''), 10) || 0 : 0;
-      const order_number = `ORD-${String(lastNum + 1).padStart(3, "0")}`;
+      const order_number = `ORD-${Date.now()}`;
       const amount = newOrder.amount.startsWith("KES") ? newOrder.amount : formatCurrency(Number(newOrder.amount));
       const { data, error } = await supabase.from('orders').insert([{ order_number, client: newOrder.client, product: newOrder.product, amount, status: newOrder.status }]).select().single();
       if (error) throw error;
@@ -552,6 +567,8 @@ export default function Dashboard() {
                   setShowNewOrderModal={setShowNewOrderModal}
                   setEditingOrder={setEditingOrder} setShowEditModal={setShowEditModal}
                   handleDeleteOrder={handleDeleteOrder}
+                  currentPage={ordersPage}
+                  onPageChange={(p) => { setOrdersPage(p); fetchOrders(p); }}
                 />
               )}
 
@@ -560,6 +577,8 @@ export default function Dashboard() {
                   clients={clients}
                   setShowClientModal={setShowClientModal}
                   handleDeleteClient={handleDeleteClient}
+                  currentPage={clientsPage}
+                  onPageChange={(p) => { setClientsPage(p); fetchClients(p); }}
                 />
               )}
 
@@ -570,6 +589,8 @@ export default function Dashboard() {
                   setEditingProduct={setEditingProduct}
                   setShowEditProductModal={setShowEditProductModal}
                   handleDeleteProduct={handleDeleteProduct}
+                  currentPage={productsPage}
+                  onPageChange={(p) => { setProductsPage(p); fetchProducts(p); }}
                 />
               )}
 

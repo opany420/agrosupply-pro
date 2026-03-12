@@ -8,6 +8,7 @@ const statusColors = {
 
 export default function ClientsTab({
   clients, setShowClientModal, handleDeleteClient,
+  currentPage, onPageChange,
 }) {
   return (
     <div>
@@ -52,6 +53,14 @@ export default function ClientsTab({
           </table>
           {clients.length === 0 && <div className="text-center py-12 text-gray-400"><Users className="w-12 h-12 mx-auto mb-3 opacity-30" /><p>No clients yet</p></div>}
         </div>
+      </div>
+
+      <div className="flex items-center justify-between mt-4">
+        <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage <= 1}
+          className="px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
+        <span className="text-sm text-gray-500">Page {currentPage}</span>
+        <button onClick={() => onPageChange(currentPage + 1)} disabled={clients.length < 10}
+          className="px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
       </div>
     </div>
   );

@@ -183,7 +183,7 @@ export default function Reviews() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Rating *</label>
                 <div className="flex items-center gap-2">
                   {[1, 2, 3, 4, 5].map(star => (
-                    <button key={star} type="button" onClick={() => setNewReview({ ...newReview, rating: star })}>
+                    <button key={star} type="button" aria-label={`Rate ${star} out of 5 stars`} onClick={() => setNewReview({ ...newReview, rating: star })}>
                       <Star className={`w-8 h-8 transition-colors ${star <= newReview.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}`} />
                     </button>
                   ))}

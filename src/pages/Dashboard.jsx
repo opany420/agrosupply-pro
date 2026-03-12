@@ -9,6 +9,7 @@ import {
 import { supabase } from '../supabase';
 import { formatCurrency, formatDate } from '../utils';
 import { COMPANY } from '../constants';
+import { useAuth } from '../AuthContext';
 import OrdersTab from './dashboard/OrdersTab';
 import ProductsTab from './dashboard/ProductsTab';
 import ClientsTab from './dashboard/ClientsTab';
@@ -70,6 +71,7 @@ async function uploadProductImage(file) {
 }
 
 export default function Dashboard() {
+  const { signOut } = useAuth();
   const [activePage, setActivePage] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isDesktop = useMediaQuery('(min-width: 1024px)');
@@ -414,7 +416,7 @@ export default function Dashboard() {
           ))}
         </nav>
         <div className="p-4 border-t border-gray-700">
-          <button onClick={async () => { try { await supabase.auth.signOut(); window.location.href = '/login'; } catch { alert('Sign out failed. Please try again.'); } }}
+          <button onClick={async () => { await signOut(); window.location.href = '/login'; }}
             className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white transition-all">
             <LogOut className="w-5 h-5 flex-shrink-0" />
             <span className="font-medium text-sm">Exit Dashboard</span>

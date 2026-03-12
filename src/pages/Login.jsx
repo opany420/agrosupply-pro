@@ -3,9 +3,11 @@ import { Helmet } from 'react-helmet-async';
 import { motion } from "framer-motion";
 import { Leaf, LogIn, Eye, EyeOff } from "lucide-react";
 import { supabase } from '../supabase';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
+import { useAuth } from '../AuthContext';
 
 export default function Login() {
+  const { user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -47,6 +49,14 @@ export default function Login() {
       setResetSent(true);
     }
   };
+
+  if (authLoading) return (
+    <div className="min-h-screen flex items-center justify-center bg-emerald-50">
+      <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
+  if (user) return <Navigate to="/dashboard" replace />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-800 to-green-900 flex items-center justify-center px-4">

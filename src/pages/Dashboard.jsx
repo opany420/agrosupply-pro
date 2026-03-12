@@ -15,6 +15,19 @@ import {
   BarChart, Bar,
 } from 'recharts';
 
+function useMediaQuery(query) {
+  const [matches, setMatches] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia(query).matches : false
+  );
+  useEffect(() => {
+    const mql = window.matchMedia(query);
+    const handler = (e) => setMatches(e.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, [query]);
+  return matches;
+}
+
 const sidebarLinks = [
   { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" },
   { icon: Package, label: "Products", id: "products" },
@@ -56,7 +69,8 @@ async function uploadProductImage(file) {
 
 export default function Dashboard() {
   const [activePage, setActivePage] = useState("dashboard");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
 
   // Data
   const [orders, setOrders] = useState([]);
@@ -315,22 +329,29 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
 
+      {/* Mobile backdrop */}
+      {!isDesktop && sidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setSidebarOpen(false)} />
+      )}
+
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-gray-900 min-h-screen flex flex-col transition-all duration-300 fixed z-40`}>
+      <aside className={`w-64 bg-gray-900 min-h-screen flex flex-col transition-transform duration-300 fixed z-50 ${
+        isDesktop ? 'translate-x-0' : (sidebarOpen ? 'translate-x-0' : '-translate-x-full')
+      }`}>
         <div className="flex items-center gap-3 p-6 border-b border-gray-700">
           <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
             <Leaf className="w-6 h-6 text-white" />
           </div>
-          {sidebarOpen && <div><h1 className="text-white font-bold text-sm">Chicago Agro</h1><p className="text-gray-400 text-xs">Admin Panel</p></div>}
+          <div><h1 className="text-white font-bold text-sm">Chicago Agro</h1><p className="text-gray-400 text-xs">Admin Panel</p></div>
         </div>
         <nav className="flex-1 p-4 space-y-1">
           {sidebarLinks.map(link => (
-            <button key={link.id} onClick={() => setActivePage(link.id)}
+            <button key={link.id} onClick={() => { setActivePage(link.id); if (!isDesktop) setSidebarOpen(false); }}
               className={"w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all " + (
                 activePage === link.id ? 'bg-emerald-600 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'
               )}>
               <link.icon className="w-5 h-5 flex-shrink-0" />
-              {sidebarOpen && <span className="font-medium text-sm">{link.label}</span>}
+              <span className="font-medium text-sm">{link.label}</span>
             </button>
           ))}
         </nav>
@@ -338,17 +359,17 @@ export default function Dashboard() {
           <button onClick={async () => { try { await supabase.auth.signOut(); window.location.href = '/login'; } catch { alert('Sign out failed. Please try again.'); } }}
             className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white transition-all">
             <LogOut className="w-5 h-5 flex-shrink-0" />
-            {sidebarOpen && <span className="font-medium text-sm">Exit Dashboard</span>}
+            <span className="font-medium text-sm">Exit Dashboard</span>
           </button>
         </div>
       </aside>
 
-      <div className={`flex-1 ${sidebarOpen ? 'ml-64' : 'ml-20'} transition-all duration-300`}>
+      <div className={`flex-1 transition-all duration-300 ${isDesktop ? 'ml-64' : 'ml-0'}`}>
 
         {/* Header */}
         <header className="bg-white border-b px-6 py-4 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-4">
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className={`p-2 rounded-lg hover:bg-gray-100 transition-colors ${isDesktop ? 'hidden' : ''}`}>
               {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
             <h2 className="text-xl font-bold text-gray-900 capitalize">{activePage}</h2>

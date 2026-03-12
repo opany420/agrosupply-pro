@@ -99,13 +99,6 @@ export default function Reviews() {
           </div>
         </div>
 
-        {submitted && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-            className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-6 py-4 rounded-xl mb-8 text-center font-medium">
-            ✅ Thank you! Your review is pending approval.
-          </motion.div>
-        )}
-
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
@@ -216,6 +209,13 @@ export default function Reviews() {
                 </button>
               </div>
             </div>
+          </motion.div>
+        )}
+
+        {submitted && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+            className="mt-8 bg-emerald-50 border border-emerald-200 text-emerald-700 px-6 py-4 rounded-xl text-center font-medium max-w-2xl mx-auto">
+            ✅ Your review has been submitted and is pending approval.
           </motion.div>
         )}
 

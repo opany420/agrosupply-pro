@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Leaf, Home, Package, Info, Phone, LayoutDashboard, LogIn, LogOut, ShoppingCart } from "lucide-react";
+import { Menu, X, Leaf, Home, Package, Info, Phone, HelpCircle, LayoutDashboard, LogIn, LogOut, ShoppingCart } from "lucide-react";
 import { useCart } from './CartContext';
 import { useAuth } from './AuthContext';
 import Cart from './components/Cart';
@@ -27,6 +27,7 @@ export default function Layout({ children }) {
     { name: 'Products', path: '/products', icon: Package },
     { name: 'About', path: '/about', icon: Info },
     { name: 'Contact', path: '/contact', icon: Phone },
+    { name: 'FAQ', path: '/faq', icon: HelpCircle },
   ];
 
   return (
